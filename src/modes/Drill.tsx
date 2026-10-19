@@ -1,4 +1,5 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { DevDrill } from './DevDrill';
 import type { Action, Card, HandKind, Rank, Suit, Up } from '../engine/types';
 import { upLabel } from '../engine/types';
 import { CardRow, CardView } from '../ui/CardView';
@@ -25,11 +26,29 @@ function makeQ(props: ModeProps, prev?: CellRef): Q {
 }
 
 export function Drill(props: ModeProps) {
+  return props.store.settings.drillFilter === 'index' ? <DevDrill {...props} /> : <BasicDrill {...props} />;
+}
+
+export function DrillFilter({ store, mutate, onChange }: ModeProps & { onChange?: () => void }) {
+  return (
+    <div className="seg small">
+      {(['all', 'hard', 'soft', 'pair', 'index'] as const).map((f) => (
+        <button key={f} className={store.settings.drillFilter === f ? 'on' : ''} onClick={() => { mutate((s) => { s.settings.drillFilter = f; }); onChange?.(); }}>
+          {f === 'all' ? 'All' : f === 'pair' ? 'Pairs' : f === 'index' ? 'Index' : f[0].toUpperCase() + f.slice(1)}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+function BasicDrill(props: ModeProps) {
   const { store, mutate, chart } = props;
   const [q, setQ] = useState<Q>(() => makeQ(props));
   const [answer, setAnswer] = useState<Action | null>(null);
   const [streak, setStreak] = useState(0);
   const [session, setSession] = useState({ n: 0, c: 0 });
+  const first = useRef(true);
+  useEffect(() => { if (first.current) { first.current = false; return; } setAnswer(null); setQ(makeQ(props)); /* eslint-disable-next-line */ }, [store.settings.drillFilter]);
   const surr = chart.rules.surrender === 'late';
   const av = { canDouble: true, canSplit: q.cell.kind === 'pair', canSurrender: surr };
   const code = codeAt(chart, q.cell);
@@ -46,16 +65,11 @@ export function Drill(props: ModeProps) {
   const ok = answer === best;
   const actions: Action[] = ['hit', 'stand', 'double', 'split', ...(surr ? (['surrender'] as Action[]) : [])];
   const setFilter = (f: 'all' | HandKind) => { mutate((s) => { s.settings.drillFilter = f; }); setAnswer(null); setQ(makeQ({ ...props, store: { ...store, settings: { ...store.settings, drillFilter: f } } })); };
+  void setFilter;
 
   return (
     <div className="screen play">
-      <div className="seg small">
-        {(['all', 'hard', 'soft', 'pair'] as const).map((f) => (
-          <button key={f} className={store.settings.drillFilter === f ? 'on' : ''} onClick={() => setFilter(f)}>
-            {f === 'all' ? 'All' : f === 'pair' ? 'Pairs' : f[0].toUpperCase() + f.slice(1)}
-          </button>
-        ))}
-      </div>
+      <DrillFilter {...props} />
       <div className="scoreline">
         <span>Session {session.c}/{session.n}</span>
         <span>🔥 {streak}</span>

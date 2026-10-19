@@ -17,6 +17,12 @@ export interface PlayerHand {
 
 export interface Feedback {
   correct: boolean;
+  /** basic-strategy action (differs from best when an index play applies) */
+  basic?: Action;
+  isDeviation?: boolean;
+  reason?: string;
+  indexId?: string;
+  tc?: number;
   chosen: Action;
   best: Action;
   cell: CellRef;
@@ -118,13 +124,21 @@ export function deal(shoe: Shoe, rules: Rules, target: DealTarget, rng: () => nu
   return s;
 }
 
-export function act(prev: GameState, action: Action, chart: Chart, rules: Rules, shoe: Shoe): GameState {
+export interface Grade { action: Action; basic: Action; isDeviation: boolean; reason?: string; indexId?: string; tc?: number }
+export type Grader = (cards: Card[], up: Up, av: Availability, s: GameState) => Grade;
+
+export function act(prev: GameState, action: Action, chart: Chart, rules: Rules, shoe: Shoe, grader?: Grader): GameState {
   const s: GameState = structuredClone(prev);
   const h = s.hands[s.active];
   const up = upOf(s.dealer[0]);
   const av = availability(s, rules);
   const best = bestAction(chart, h.cards, up, av);
-  s.feedback.push({ correct: best.action === action, chosen: action, best: best.action, cell: best.cell, cards: [...h.cards], up });
+  const g = grader?.(h.cards, up, av, prev);
+  const bestAct = g ? g.action : best.action;
+  s.feedback.push({
+    correct: bestAct === action, chosen: action, best: bestAct, cell: best.cell, cards: [...h.cards], up,
+    basic: best.action, isDeviation: g?.isDeviation, reason: g?.reason, indexId: g?.indexId, tc: g?.tc,
+  });
 
   switch (action) {
     case 'hit':

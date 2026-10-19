@@ -6,6 +6,7 @@ export interface ModeProps {
   store: Store;
   mutate: (fn: (s: Store) => void) => void;
   chart: Chart;
+  openGuide: (page?: number) => void;
 }
 
 export const ACTION_LABEL: Record<Action, string> = {

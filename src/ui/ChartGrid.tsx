@@ -21,13 +21,15 @@ export function codesFor(chart: Chart, kind: HandKind, row: number): Code[] {
 }
 
 export function ChartGrid({
-  chart, kind, onTap, selected, marks,
+  chart, kind, onTap, selected, marks, overlay,
 }: {
   chart: Chart;
   kind: HandKind;
   onTap: (row: number, up: Up) => void;
   selected?: { row: number; up: Up } | null;
   marks?: (row: number, up: Up) => 'miss' | 'ok' | null;
+  /** count overlay: replacement code for a cell and whether it differs from basic */
+  overlay?: (row: number, up: Up) => { code: Code; changed: boolean; hasIndex: boolean } | null;
 }) {
   return (
     <div className="grid" role="table">
@@ -38,12 +40,14 @@ export function ChartGrid({
       {ROWS[kind].map(({ row, label }) => (
         <div className="grid-row" key={row}>
           <div className="grid-label">{label}</div>
-          {codesFor(chart, kind, row).map((code, i) => {
+          {codesFor(chart, kind, row).map((basicCode, i) => {
             const up = UPCARDS[i];
+            const ov = overlay?.(row, up);
+            const code = ov?.code ?? basicCode;
             const sel = selected && selected.row === row && selected.up === up;
             const m = marks?.(row, up);
             return (
-              <button key={i} className={`cell c-${code}${sel ? ' sel' : ''}`} onClick={() => onTap(row, up)} aria-label={`${label} vs ${upLabel(up)}: ${code}`}>
+              <button key={i} className={`cell c-${code}${sel ? ' sel' : ''}${ov?.changed ? ' dev' : ov?.hasIndex ? ' idx' : ''}`} onClick={() => onTap(row, up)} aria-label={`${label} vs ${upLabel(up)}: ${code}`}>
                 {code}
                 {m === 'miss' && <span className="dot" />}
               </button>

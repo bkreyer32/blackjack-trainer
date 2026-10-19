@@ -11,7 +11,9 @@ import { allCells, cellWeight, combinedTally, pickWeighted, record } from '../st
 import { ActionPad } from './Drill';
 import { Keypad, fmtSigned } from '../ui/Keypad';
 import { runningCount, decksRemaining, exactTrueCount, trueCount, gradeTrueCount, rampBet, betOptions } from '../count/hilo';
-import { recordErr } from '../stats/stats';
+import { recordErr, recordDev } from '../stats/stats';
+import { correctPlay, insuranceCorrect } from '../engine/deviations';
+import type { Grader } from '../game/game';
 import { CountFeedback } from './Count';
 import { ACTION_LABEL, type ModeProps } from './common';
 
@@ -22,7 +24,7 @@ function totalLabel(cards: GameState['dealer']) {
 
 const RESULT: Record<string, string> = { win: 'Win', lose: 'Lose', push: 'Push', blackjack: 'Blackjack!', surrender: 'Surrendered', bust: 'Bust' };
 
-export function Play({ store, mutate, chart }: ModeProps) {
+export function Play({ store, mutate, chart, openGuide }: ModeProps) {
   const rules = chart.rules;
   const shoeRef = useRef<Shoe | null>(null);
   if (!shoeRef.current || shoeRef.current.decks !== rules.decks) shoeRef.current = new Shoe(rules.decks);
@@ -40,6 +42,22 @@ export function Play({ store, mutate, chart }: ModeProps) {
   const [countFb, setCountFb] = useState<{ rc: number; rcAns: number; tcAns: number | null; decks: number; cardsLeft: number } | null>(null);
   const [betFb, setBetFb] = useState<{ bet: number; want: number; tc: number } | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
+  const devOn = counting && cs.deviations;
+  const [pendingIns, setPendingIns] = useState<GameState | null>(null);
+  const [insFb, setInsFb] = useState<{ took: boolean; right: boolean; tc: number; net: number } | null>(null);
+
+  /** Exact true count from every card seen so far (completed rounds + face-up cards of this round). */
+  const liveTc = (st: GameState) => {
+    const visible = [st.dealer[0], ...st.hands.flatMap((h) => h.cards)].filter(Boolean);
+    return (rcRef.current + runningCount(visible)) / decksRemaining(shoe.remaining);
+  };
+  const grader: Grader | undefined = devOn
+    ? (cards, up, av, st) => {
+        const tc = liveTc(st);
+        const r = correctPlay(cards, up, rules, av, tc);
+        return { action: r.action, basic: r.basic, isDeviation: r.isDeviation, reason: r.reason, indexId: r.index?.id, tc };
+      }
+    : undefined;
 
   const startRound = (bet: number) => {
     let target: CellRef | null = null;
@@ -49,6 +67,26 @@ export function Play({ store, mutate, chart }: ModeProps) {
     setTargeted(target);
     setShowWhy(false);
     const s = deal(shoe, rules, target, Math.random, bet);
+    setInsFb(null);
+    if (devOn && upOf(s.dealer[0]) === 11) {
+      // Offer insurance before the peek: show the deal with the hole card down and no result yet.
+      setPendingIns(s);
+      setG({ ...s, phase: 'player', holeHidden: true, message: undefined, hands: s.hands.map((h) => ({ ...h, result: undefined, done: false })) });
+      return;
+    }
+    setG(s);
+    if (s.phase === 'done') roundOver(s);
+  };
+
+  const answerInsurance = (took: boolean) => {
+    const s = pendingIns!;
+    const tc = liveTc(s);
+    const right = took === insuranceCorrect(tc);
+    const dealerBJ = s.dealer.length === 2 && handValue(s.dealer).total === 21;
+    const insNet = took ? (dealerBJ ? s.hands[0].bet : -s.hands[0].bet / 2) : 0;
+    setInsFb({ took, right, tc, net: insNet });
+    setPendingIns(null);
+    mutate((st) => { recordDev(st.dev.play, 'ins', right); st.play.net += insNet; });
     setG(s);
     if (s.phase === 'done') roundOver(s);
   };
@@ -105,17 +143,21 @@ export function Play({ store, mutate, chart }: ModeProps) {
   };
 
   const onAct = (a: Action) => {
-    const s = act(g, a, chart, rules, shoe);
+    const s = act(g, a, chart, rules, shoe, grader);
     const fb = s.feedback[s.feedback.length - 1];
     setShowWhy(!fb.correct);
     setG(s);
-    mutate((st) => { record(st.play, fb.cell, fb.correct); });
+    setInsFb(null);
+    mutate((st) => {
+      record(st.play, fb.cell, fb.correct);
+      if (fb.indexId) recordDev(st.dev.play, fb.indexId, fb.correct);
+    });
     if (s.phase === 'done') roundOver(s);
   };
 
   const av = availability(g, rules);
   const enabled = (a: Action) =>
-    g.phase === 'player' &&
+    g.phase === 'player' && !pendingIns &&
     (a === 'hit' ? av.canHit : a === 'stand' ? true : a === 'double' ? av.canDouble : a === 'split' ? av.canSplit : av.canSurrender);
   const last = g.feedback[g.feedback.length - 1];
   const lastCode = last ? codeAt(chart, last.cell) : null;
@@ -156,11 +198,17 @@ export function Play({ store, mutate, chart }: ModeProps) {
         {last && lastCode && (
           <div className={`feedback ${last.correct ? 'good' : 'bad'}`} onClick={() => setShowWhy(!showWhy)}>
             <div className="fb-title">
-              {last.correct ? `✓ ${ACTION_LABEL[last.chosen]} is right` : `✗ Basic strategy: ${ACTION_LABEL[last.best]}`}
+              {last.correct
+                ? `✓ ${ACTION_LABEL[last.chosen]} is right${last.isDeviation ? ' — index play!' : ''}`
+                : `✗ ${last.isDeviation ? 'Index play' : 'Basic strategy'}: ${ACTION_LABEL[last.best]}`}
               {!last.correct && <span className="muted"> (you: {ACTION_LABEL[last.chosen]})</span>}
             </div>
+            {last.isDeviation && last.basic && last.tc !== undefined && (
+              <div className="fb-dev">Basic says {ACTION_LABEL[last.basic]}, but at TC {fmtSigned(last.tc, 1)} the index play is {ACTION_LABEL[last.best]}.</div>
+            )}
             <div className="fb-sub">{rowLabel(last.cell.kind, last.cell.row)} vs {upLabel(last.up)} → {CODE_NAME[lastCode]}{showWhy ? '' : ' · tap for why'}</div>
-            {showWhy && <div className="fb-body">{explain(last.cell.kind, last.cell.row, last.up, lastCode, rules)}</div>}
+            {showWhy && <div className="fb-body">{last.reason ? `${last.reason}. ` : ''}{last.isDeviation ? '' : explain(last.cell.kind, last.cell.row, last.up, lastCode, rules)}</div>}
+            {showWhy && last.reason && <button className="linkbtn" onClick={(e) => { e.stopPropagation(); openGuide(2); }}>How deviations work</button>}
           </div>
         )}
         {g.phase === 'done' && (
@@ -171,6 +219,11 @@ export function Play({ store, mutate, chart }: ModeProps) {
         )}
         {targeted && g.phase !== 'idle' && <div className="target-tag">🎯 Weak-spot deal</div>}
         {counting && notice && <div className="target-tag">{notice}</div>}
+        {insFb && (
+          <div className={`betfb ${insFb.right ? 'ok' : 'no'}`}>
+            {insFb.right ? '✓' : '✗'} {insFb.took ? 'Took' : 'Declined'} insurance at TC {fmtSigned(insFb.tc, 1)} — {insuranceCorrect(insFb.tc) ? 'insure at +3 or more' : 'only insure at TC +3 or more'}{insFb.took ? ` (${insFb.net > 0 ? '+' : ''}${insFb.net}u)` : ''}
+          </div>
+        )}
         {counting && betFb && (
           <div className={`betfb ${betFb.bet === betFb.want ? 'ok' : 'no'}`}>
             {betFb.bet === betFb.want ? '✓' : '✗'} Bet {betFb.bet}u{betFb.bet === betFb.want ? '' : ` · ramp says ${betFb.want}u`} at TC {fmtSigned(betFb.tc)}
@@ -198,7 +251,15 @@ export function Play({ store, mutate, chart }: ModeProps) {
         </div>
       ) : (
       <div className="actions">
-        {g.phase === 'player' ? (
+        {pendingIns ? (
+          <div className="pad">
+            <div className="bet-label">Dealer shows an ace — insurance?{cs.showDecksLeft ? ` · ≈${decksLeft} decks left` : ''}</div>
+            <div className="pad-row big">
+              <button className="btn act a-surrender" onClick={() => answerInsurance(false)}>No insurance</button>
+              <button className="btn act a-double" onClick={() => answerInsurance(true)}>Insure</button>
+            </div>
+          </div>
+        ) : g.phase === 'player' ? (
           <ActionPad actions={actions} enabled={enabled} onAct={onAct} />
         ) : (
           <button className="btn deal" onClick={onDeal}>{counting ? 'Next hand (bet)' : 'Deal'}</button>

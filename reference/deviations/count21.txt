@@ -1,0 +1,150 @@
+Source: https://www.count21.io/deviations
+Retrieved: 2026-10-19
+
+ Illustrious 18 & Fab 4: Blackjack Deviation Charts | Count21 
+ Practice Pricing Pro Features Contact 
+ Strategy Deviations
+ When to adjust your strategy based on deck composition
+ H17 S17 
+ Dealer Hits Soft 17 (Vegas standard)
+ What are Deviations?
+ Basic strategy assumes you have no knowledge of remaining cards. But when counting, you know if the deck is rich or poor in certain cards. Deviations are adjusted plays that become mathematically correct at specific true counts.
+ Positive Index (+)
+ Deviate when true count is at or above the index. High counts mean more 10s/Aces remain.
+ Negative Index (-)
+ Deviate when true count is at or below the index. Low counts mean more small cards remain.
+ Illustrious 17 (most valuable) Fab 3 (surrenders) 
+ The Illustrious 17
+ Show descriptions 
+ # 1 Insurance 
+ +3
+ Hit → Stand 
+ Take insurance when true count is +3 or higher
+ # 2 16 vs 10 
+ +0
+ Hit → Stand 
+ Stand on 16 vs 10 when true count is 0 or higher
+ # 3 15 vs 10 
+ +4
+ Hit → Stand 
+ Stand on 15 vs 10 when true count is +4 or higher
+ # 4 10,10 vs 5 
+ +5
+ Stand → Split 
+ Split 10s vs 5 when true count is +5 or higher
+ # 5 10,10 vs 6 
+ +4
+ Stand → Split 
+ Split 10s vs 6 when true count is +4 or higher
+ # 6 10 vs 10 
+ +4
+ Hit → Double 
+ Double 10 vs 10 when true count is +4 or higher
+ # 7 12 vs 3 
+ +2
+ Hit → Stand 
+ Stand on 12 vs 3 when true count is +2 or higher
+ # 8 12 vs 2 
+ +3
+ Hit → Stand 
+ Stand on 12 vs 2 when true count is +3 or higher
+ # 9 10 vs A 
+ +3
+ Hit → Double 
+ Double 10 vs Ace when true count is +3 or higher
+ # 10 9 vs 2 
+ +1
+ Hit → Double 
+ Double 9 vs 2 when true count is +1 or higher
+ # 11 9 vs 7 
+ +3
+ Hit → Double 
+ Double 9 vs 7 when true count is +3 or higher
+ # 12 16 vs 9 
+ +5
+ Hit → Stand 
+ Stand on 16 vs 9 when true count is +5 or higher
+ # 13 13 vs 2 
+ -1
+ Stand → Hit 
+ Hit 13 vs 2 when true count is -1 or lower
+ # 14 12 vs 4 
+ +0
+ Stand → Hit 
+ Hit 12 vs 4 when true count is 0 or lower
+ # 15 12 vs 5 
+ -2
+ Stand → Hit 
+ Hit 12 vs 5 when true count is -2 or lower
+ # 16 12 vs 6 
+ -1
+ Stand → Hit 
+ Hit 12 vs 6 when true count is -1 or lower
+ # 17 13 vs 3 
+ -2
+ Stand → Hit 
+ Hit 13 vs 3 when true count is -2 or lower
+ Quick Reference Table
+ # Hand Index Basic Deviation 
+ 1 Insurance +3 H S 
+ 2 16 vs 10 +0 H S 
+ 3 15 vs 10 +4 H S 
+ 4 10,10 vs 5 +5 S P 
+ 5 10,10 vs 6 +4 S P 
+ 6 10 vs 10 +4 H D 
+ 7 12 vs 3 +2 H S 
+ 8 12 vs 2 +3 H S 
+ 9 10 vs A +3 H D 
+ 10 9 vs 2 +1 H D 
+ 11 9 vs 7 +3 H D 
+ 12 16 vs 9 +5 H S 
+ 13 13 vs 2 -1 S H 
+ 14 12 vs 4 +0 S H 
+ 15 12 vs 5 -2 S H 
+ 16 12 vs 6 -1 S H 
+ 17 13 vs 3 -2 S H 
+ 18 14 vs 10 +3 H R 
+ 19 15 vs 10 +0 H R 
+ 20 15 vs 9 +2 H R 
+ Key Takeaways
+ Insurance is #1
+ The most valuable deviation is taking insurance at TC +3 or higher. Basic strategy says never take it, but with a rich deck it becomes profitable.
+ 16 vs 10 is Close
+ The famous 16 vs 10 is a deviation at TC 0 - almost a coin flip at basic strategy. Any positive count tips the scales toward standing.
+ Learn by Priority
+ The Illustrious 18 are ordered by value. Focus on mastering #1-6 before learning the rest. 90% of the value comes from the first few deviations.
+ Memorization Tips
+ 1. Group by pattern: Notice that 12 vs 2-6 all have negative indices (hit when deck is poor). 
+ 2. Use rhymes: “Insurance at three” - take insurance at TC +3. 
+ 3. Practice scenarios: Deal yourself hands and quiz yourself on the deviation indices. 
+ 4. Understand the logic: High count = more 10s, so stand more often (dealer busts more) and double more aggressively. 
+ Practice with Tracking Review Tracking Systems 
+ Blackjack strategy and card counting trainer
+ Learn
+ Practice 
+ Rules 
+ Strategy 
+ Card Counting 
+ Table Selection 
+ Common Mistakes 
+ Psychology 
+ Legal
+ Privacy Policy 
+ Terms of Service 
+ Contact 
+ Refund Policy 
+ Contact
+ Invocation Technologies LLC
+ 16192 Coastal Highway
+ Lewes , DE
+ support@count21.io 
+ Responsible Gaming
+ 18+ 
+ Gambling can be addictive. Please play responsibly.
+ National Problem Gambling Helpline : 1-800-522-4700 | BeGambleAware GamCare 
+ Count21 is educational software for learning blackjack strategy and probability concepts. No real money is used or wagered. All chips and balances are virtual and for practice purposes only. This is not a gambling application. Practice or success in Count21 does not imply success at real-money gambling.
+ © 2026 Count21 . All rights reserved.
+ Practice 
+ Pro 
+ Pricing 
+ 

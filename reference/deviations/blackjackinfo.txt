@@ -1,0 +1,212 @@
+Source: https://www.blackjackinfo.com/card-counting/illustrious-18/
+Retrieved: 2026-10-19
+
+ 
+ Illustrious 18 & Fab 4: Hi-Lo Blackjack Deviations Chart 
+ Learn 
+ Blackjack School 
+ Strategy Engine 
+ Blackjack Rules 
+ Card Counting 
+ Glossary 
+ Practice 
+ Strategy Trainer 
+ Card Counting Trainer 
+ Drills 
+ Strategy Quiz 
+ Hand Calculator 
+ Casino Vérité Blackjack 
+ Store 
+ Tournaments New 
+ Online Blackjack 
+ Live Dealer Blackjack 
+ Free Blackjack Games 
+ Multiplayer Blackjack 
+ Blackjack Variations 
+ Online Casinos 
+ Casino Reviews 
+ Casino Bonuses 
+ Bonus Calculator 
+ Payment Methods 
+ Casino Operators 
+ Submit a Complaint 
+ Forum 
+ English 
+ Italian 
+ German 
+ Spanish 
+ French 
+ Ukrainian 
+ Russian 
+ Thai 
+ Search 
+ Start here 
+ Blackjack School 
+ The free 24-lesson course that built this site's reputation 
+ Learn 
+ Basic Strategy Engine 
+ Blackjack Rules 
+ Card Counting 
+ Tournament Strategy 
+ Betting Strategies Debunked 
+ What is Wonging? 
+ Glossary of Terms 
+ Interviews 
+ Practice 
+ Strategy Trainer 
+ Card Counting Trainer 
+ Drills 
+ Strategy Quiz 
+ Hand Calculator 
+ Casino Vérité Blackjack 
+ Store 
+ Tournaments New 
+ Online Blackjack 
+ Live Dealer Blackjack 
+ Free Blackjack Games 
+ Multiplayer Blackjack 
+ Blackjack Variations 
+ Online Casinos 
+ Casino Reviews 
+ Casino Bonuses 
+ Bonus Calculator 
+ Payment Methods 
+ Casino Operators 
+ Submit a Complaint 
+ Forum 
+ Language 
+ English 
+ Italian 
+ German 
+ Spanish 
+ French 
+ Ukrainian 
+ Russian 
+ Thai 
+ Home ›
+ Card Counting › Illustrious 18
+ The Illustrious 18 & Fab 4: Blackjack Deviations Chart
+ The Illustrious 18 and Fab 4 are the highest-value Hi-Lo deviations: the hands where the running count, not the basic strategy chart, decides the correct play. Set your true count below and watch which plays change.
+ By Tum 
+ Last reviewed 11 October 2026 
+ Index values verified against Don Schlesinger's Blackjack Attack · Hi-Lo, six decks, dealer stands on soft 17
+ Your true count 
+ − 
+ + 
+ Update table 
+ 6 of these 22 plays change from the book at a true count of +2 .
+ Correct play at this count 
+ Basic-strategy play 
+ You are deviating from the book 
+ The Illustrious 18
+ Hi-Lo, six decks, dealer stands on soft 17. Make the highlighted play when your true count is at or above the index; otherwise hit. Your hand Dealer Hi-Lo index Count ≥ index Count < index 
+ Insurance A +3 Take insurance No insurance 
+ 16 10 0 Stand Hit 
+ 15 10 +4 Stand Hit 
+ Pair of 10s 5 +5 Split Stand 
+ Pair of 10s 6 +4 Split Stand 
+ 10 10 +4 Double Hit 
+ 12 3 +2 Stand Hit 
+ 12 2 +3 Stand Hit 
+ 11 A +1 Double Hit 
+ 9 2 +1 Double Hit 
+ 10 A +4 Double Hit 
+ 9 7 +3 Double Hit 
+ 16 9 +5 Stand Hit 
+ 13 2 -1 Stand Hit 
+ 12 4 0 Stand Hit 
+ 12 5 -2 Stand Hit 
+ 12 6 -1 Stand Hit 
+ 13 3 -2 Stand Hit 
+ The Fab 4 (late surrender)
+ Hi-Lo, six decks. Surrender at or above the index; otherwise hit. Your hand Dealer Hi-Lo index Count ≥ index Count < index 
+ 14 10 +3 Surrender Hit 
+ 15 9 +2 Surrender Hit 
+ 15 10 0 Surrender Hit 
+ 15 A +1 Surrender Hit 
+ Reading the table: make the highlighted play. When it is not the basic-strategy cell, the row is flagged, because at this count the count overrides the book. True count is your running count divided by the decks still to be dealt; act on a play once the true count reaches its index.
+ Basic strategy is built for a full, freshly shuffled deck. Card counting tells you when the deck in front of you has drifted far enough from that starting point that a different play becomes correct. Those count-dependent plays are called deviations , or index plays, and the tool above is the working version of the two most important sets: the Illustrious 18 and the Fab 4 .
+ What a deviation actually is
+ Every entry in the chart above has an index number : the Hi-Lo true count at which the correct play flips. The rule is the same for all of them, take the stand, double, split, insure or surrender play once the true count reaches the index, and otherwise hit. Insurance is the cleanest example. It is a bad bet at a neutral count, but each ten still in the shoe makes the dealer more likely to hold a blackjack, and once the Hi-Lo true count reaches +3 the bet turns profitable. Nothing about your cards changed; the composition of what is left did.
+ A handful of the plays run the other way, and the chart marks them for you. On stiff totals against a low card, such as 12 against a 4 or 13 against a 2, basic strategy already stands. There the deviation is to hit when the count drops below the index, because a shortage of small cards makes standing worse. Same single rule, “stand if the true count is at or above the index, otherwise hit”; it just lands on the other side of the line for those hands.
+ True count, in one paragraph
+ Deviation indices are true counts, not running counts. You keep a running Hi-Lo count as cards come out (+1 for 2 through 6, -1 for tens and aces), then divide by the number of decks still to be dealt to get the true count. A running count of +6 with two decks left is a true count of +3. Convert first, then compare to the index. If the counting itself is new to you, start with our full card counting guide before you touch a single index.
+ The Illustrious 18
+ The Illustrious 18 is Don Schlesinger’s ranked list of the eighteen highest-value index plays, published in Blackjack Attack . They are ordered by how much money each one is worth, and that ranking is the point: in a six-deck game, knowing just these eighteen captures roughly 80 to 85 percent of the entire gain available from index play. You do not need hundreds of numbers to beat a shoe; you need the right eighteen, and insurance at the top of the list is the single most valuable of them all.
+ The chart above is the complete set, with the basic-strategy play and the count-based play side by side, so you can see exactly which cell you are moving away from. Set your true count and the rows that are currently overriding the book are flagged.
+ These are the canonical six deck S17 indices. Exact indices can vary with deck count and table rules. Use the trainer’s set for your table by default, or select Published S17 for this book list.
+ The Fab 4
+ The Fab 4 are Schlesinger’s four most valuable late-surrender deviations, and they only apply at a table that offers surrender. Two of them, 15 against a ten and 15 against an ace, are already basic-strategy surrenders in some rule sets, so the “deviation” there is really about when to stop surrendering and take a card instead as the count falls. The other two, 14 against a ten and 15 against a nine, are pure count-driven surrenders you would never make on the book alone.
+ How the rules shift the numbers
+ Because indices are true-count based, they barely move with the size of the shoe. The values above are the canonical six-deck set, and they are used essentially unchanged for double deck; single-deck play tweaks a few of them, but the same eighteen remain the most valuable. The rule that does matter is soft 17. Among the Illustrious 18, the only index that meaningfully changes between a dealer who stands on soft 17 and one who hits it is 11 versus an ace : under a hitting-soft-17 game, doubling there is already basic strategy, so the deviation disappears. The Fab 4 surrenders shift a little more under that rule. Generate the exact basic-strategy base for your table with our strategy engine , then layer these indices on top.
+ How to actually use this
+ Indices are the last thing you learn, not the first. In order: get basic strategy perfect, learn to keep and convert a Hi-Lo count, then add deviations a few at a time, starting with insurance and 16 against a ten, which do most of the work. Trying to memorise all of them before the count is automatic is the classic mistake, and we wrote a whole piece on it: learning card counting indexes, and the mistake to avoid . One more thing worth saying plainly: none of this helps online. Real-money RNG blackjack reshuffles every hand, so the count never builds and indices never trigger. Deviations pay only at a physical table with real penetration.
+ Community discussion
+ Our forum has argued the finer points of these indices for years. Two threads are the best starting points: Illustrious 18 for a newcomer , and Illustrious 18 and Fab 4 with the Hi-Lo system , where experienced counters walk through how they learned and applied the set.
+ Related reading
+ Card counting , the Hi-Lo system and true count from the start
+ Basic strategy engine , the perfect base every deviation departs from
+ Learning card counting indexes , the mistake to avoid
+ Written by 
+ Tum
+ BlackjackInfo.com administrator
+ Tum administers BlackjackInfo.com and moderates its forum, and has worked across the LCB network of casino, poker and sports affiliate sites for more than ten years.
+ Read Tum’s full bio 
+ Keep sharpening your game
+ 🃏 
+ Card Counting 
+ The full guide to the Hi-Lo system, true count conversion and building a bankroll before you ever touch an index.
+ 📈 
+ Basic Strategy Engine 
+ Deviations start from a perfect basic strategy base. Generate the exact chart for your rules first.
+ 🎯 
+ Strategy Trainer 
+ Drill your decisions in real time until the correct play is automatic.
+ 🧮 
+ Card Counting Trainer 
+ Practice applying these deviations at real speed, keeping the running count as the cards come.
+ Login 
+ Label 
+ {} 
+ [+] 
+ Name* 
+ Email* 
+ Label 
+ {} 
+ [+] 
+ Name* 
+ Email* 
+ This site is protected by reCAPTCHA and the Google Privacy Policy and Terms of Service apply.
+ 0 Comments 
+ Newest 
+ Oldest 
+ Most Voted 
+ Inline Feedbacks 
+ View all comments
+ Important Links 
+ Affiliate Notice 
+ Privacy Policy 
+ Problem Gambling? 
+ Contact Us 
+ Casino Operators 
+ Gamble Responsibly 
+ If you have a problem gambling, please
+ seek help here .
+ Download Our App 
+ Blackjack Strategy Trainer, free on iPhone, iPad and Android.
+ Newsletter 
+ Get periodic updates. Over 18,000 players have already subscribed.
+ Subscribe to discover the Top 10 Blackjack Strategy Mistakes.
+ Leave this field blank 
+ Subscribe 
+ © 1999–2026 BlackjackInfo.com. All rights reserved. Play responsibly.
+ English 
+ · Italian 
+ · German 
+ · Spanish 
+ · French 
+ · Ukrainian 
+ · Russian 
+ · Thai 
+ wpDiscuz 
+ Insert 

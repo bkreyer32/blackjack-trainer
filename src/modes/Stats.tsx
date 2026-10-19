@@ -2,7 +2,8 @@ import type { HandKind } from '../engine/types';
 import { upLabel } from '../engine/types';
 import { CODE_NAME, rowLabel } from '../engine/explain';
 import { codeAt } from '../engine/decide';
-import { pct, weakSpots, freshCountStats, type Tally, type ErrTally } from '../stats/stats';
+import { pct, weakSpots, freshCountStats, devTally, type Tally, type ErrTally } from '../stats/stats';
+import { activeIndexPlays, playName, fmtTc } from '../engine/deviations';
 import type { ModeProps } from './common';
 
 function Bar({ label, t }: { label: string; t: Tally }) {
@@ -48,9 +49,11 @@ export function Stats({ store, mutate, chart }: ModeProps) {
           ))}
         </div>
       )}
+      <h3>Deviations (index plays)</h3>
+      <DevStatsView store={store} chart={chart} />
       <h3>Card counting (Hi-Lo)</h3>
       <CountStatsView store={store} />
-      <button className="btn wide ghost danger" onClick={() => { if (confirm('Reset all stats on this device?')) mutate((s) => { const f = { cells: {}, kinds: { hard: { n: 0, correct: 0 }, soft: { n: 0, correct: 0 }, pair: { n: 0, correct: 0 } } }; s.play = { ...f, hands: 0, net: 0 }; s.drill = structuredClone(f); s.count = freshCountStats(); }); }}>Reset stats</button>
+      <button className="btn wide ghost danger" onClick={() => { if (confirm('Reset all stats on this device?')) mutate((s) => { const f = { cells: {}, kinds: { hard: { n: 0, correct: 0 }, soft: { n: 0, correct: 0 }, pair: { n: 0, correct: 0 } } }; s.play = { ...f, hands: 0, net: 0 }; s.drill = structuredClone(f); s.count = freshCountStats(); s.dev = { drill: {}, play: {} }; }); }}>Reset stats</button>
     </div>
   );
 }
@@ -82,6 +85,31 @@ function CountStatsView({ store }: { store: ModeProps['store'] }) {
       <div className="muted small sub-bars">Avg TC error {avgErr(tc)} (vs exact TC)</div>
       <Bar label="Bet sizing vs ramp" t={bet} />
       <div className="muted small sub-bars">Avg bet error {bet.n ? (bet.absErr / bet.n).toFixed(2) : '–'} units · {store.settings.count.spread} spread</div>
+    </>
+  );
+}
+
+function DevStatsView({ store, chart }: { store: ModeProps['store']; chart: ModeProps['chart'] }) {
+  const rows = activeIndexPlays(chart.rules).map(({ play, app }) => ({ play, app, t: devTally(store, play.id) }));
+  const tot = rows.reduce((a, r) => ({ n: a.n + (r.t?.n ?? 0), correct: a.correct + (r.t?.correct ?? 0) }), { n: 0, correct: 0 });
+  const sum = (m: Record<string, Tally>) => Object.values(m).reduce((a, t) => ({ n: a.n + t.n, correct: a.correct + t.correct }), { n: 0, correct: 0 });
+  return (
+    <>
+      <Bar label="All index decisions" t={tot} />
+      <div className="muted small sub-bars">Drill {pct(sum(store.dev.drill)) ?? '–'}% ({sum(store.dev.drill).n}) · In play {pct(sum(store.dev.play)) ?? '–'}% ({sum(store.dev.play).n})</div>
+      <div className="dev-table">
+        {rows.map(({ play, app, t }) => {
+          const p = pct(t);
+          return (
+            <div key={play.id} className={`dev-row${app.ok ? '' : ' off'}`}>
+              <span className="dev-name">{playName(play)}{play.group === 'Fab4' ? ' (surr.)' : ''}</span>
+              <span className="muted">{fmtTc(play.index)}</span>
+              <span className="dev-bar"><span style={{ width: `${p ?? 0}%`, background: p === null ? 'transparent' : p >= 90 ? '#2fbf71' : p >= 70 ? '#e0b43a' : '#e5484d' }} /></span>
+              <span className="muted">{t ? `${p}% · ${t.n}` : app.ok ? '–' : 'off'}</span>
+            </div>
+          );
+        })}
+      </div>
     </>
   );
 }

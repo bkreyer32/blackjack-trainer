@@ -208,3 +208,54 @@ h3 { font-size: 14px; text-transform: uppercase; letter-spacing: .05em; color: v
 .betfb { font-size: 13px; text-align: center; padding: 4px; border-radius: 8px; }
 .betfb.ok { color: #7ff0b0; } .betfb.no { color: #ff9a9d; }
 .sub-bars { margin: -6px 0 10px; }
+
+/* ---------- deviations ---------- */
+.tc-bar { display: flex; align-items: center; gap: 10px; margin-top: 8px; }
+.tc-toggle { flex: none; min-width: 92px; height: 38px; border-radius: 10px; background: var(--panel); border: 1px solid var(--line); font-weight: 700; font-size: 14px; color: var(--muted); }
+.tc-toggle.on { background: #3b2f0b; border-color: #e0b43a; color: #ffd76a; }
+.tc-bar .slider { flex: 1; }
+.tc-bar .slider:disabled { opacity: .35; }
+.cell.dev { outline: 2px solid #ffc83d; outline-offset: -2px; box-shadow: 0 0 10px #ffc83d88; }
+.cell.idx::after { content: ''; position: absolute; bottom: 2px; left: 50%; transform: translateX(-50%); width: 10px; height: 2px; border-radius: 1px; background: #ffc83d; }
+.devkey, .idxkey { display: inline-block; width: 14px; height: 10px; border-radius: 3px; vertical-align: middle; }
+.devkey { outline: 2px solid #ffc83d; }
+.idxkey { border-bottom: 2px solid #ffc83d; }
+.idx-card { background: #2a230d; border: 1px solid #5c4a14; border-radius: 10px; padding: 9px 11px; margin: 8px 0; font-size: 14px; line-height: 1.4; }
+.idx-list { display: flex; flex-direction: column; gap: 6px; padding-bottom: 14px; }
+.idx-list h3 { margin: 12px 0 4px; }
+.idx-row { display: grid; grid-template-columns: 46px 1fr auto; align-items: center; gap: 10px; background: var(--panel); border: 1px solid var(--line); border-radius: 11px; padding: 8px 10px; margin-bottom: 5px; }
+.idx-row.off { opacity: .45; }
+.idx-num { font-size: 20px; font-weight: 800; color: #ffd76a; text-align: center; }
+.idx-name { font-weight: 700; font-size: 15px; }
+.note { font-size: 12.5px; background: #2a230d; border: 1px solid #5c4a14; color: #f3e2b0; border-radius: 10px; padding: 8px 10px; margin: 0; }
+.guide-btn { margin-top: 10px; background: #13314f; border-color: #275a8a; font-size: 16px; }
+.fb-dev { font-size: 13.5px; color: #ffd76a; margin-top: 3px; font-weight: 600; }
+.tc-badge { align-self: center; background: #3b2f0b; border: 1px solid #e0b43a; color: #ffd76a; border-radius: 999px; padding: 6px 16px; font-size: 15px; }
+.tc-badge b { font-size: 20px; }
+.dev-table { display: flex; flex-direction: column; gap: 4px; margin-top: 6px; }
+.dev-row { display: grid; grid-template-columns: 1.3fr 30px 1fr 64px; align-items: center; gap: 8px; font-size: 13px; padding: 5px 2px; border-bottom: 1px solid #ffffff08; }
+.dev-row.off { opacity: .4; }
+.dev-row > :last-child { text-align: right; }
+.dev-bar { height: 7px; background: var(--panel2); border-radius: 4px; overflow: hidden; display: block; }
+.dev-bar > span { display: block; height: 100%; }
+
+.guide { position: fixed; inset: 0; z-index: 30; background: var(--bg); display: flex; flex-direction: column;
+  padding: calc(var(--sat) + 10px) 16px calc(var(--sab) + 12px); animation: fade .15s; }
+.guide-top { display: flex; justify-content: space-between; align-items: center; font-size: 13px; }
+.guide-x { width: 44px; height: 44px; font-size: 20px; border-radius: 22px; background: var(--panel); }
+.guide-page { flex: 1; overflow-y: auto; font-size: 16px; line-height: 1.5; animation: up .2s ease-out; }
+.guide-page h2 { font-size: 23px; margin: 8px 0 12px; line-height: 1.2; }
+.guide-page p { margin: 0 0 12px; }
+.g-split { display: flex; flex-direction: column; gap: 8px; margin: 6px 0 12px; }
+.g-box { border-radius: 12px; padding: 10px 12px; font-size: 15px; }
+.g-box ul { margin: 6px 0 0; padding-left: 18px; }
+.g-box.plus { background: #11301f; border: 1px solid #1f6b43; }
+.g-box.minus { background: #3a1517; border: 1px solid #7a2a2f; }
+.g-ex { background: var(--panel); border: 1px solid var(--line); border-left: 4px solid #ffc83d; border-radius: 10px; padding: 10px 12px; margin: 4px 0 12px; font-size: 15px; }
+.g-ex.big { font-size: 16px; }
+.g-list { padding-left: 20px; margin: 0 0 12px; }
+.g-list li { margin-bottom: 6px; }
+.guide-dots { display: flex; justify-content: center; gap: 8px; padding: 10px 0; }
+.guide-dots button { width: 9px; height: 9px; border-radius: 5px; background: var(--line); padding: 0; }
+.guide-dots button.on { background: var(--accent); width: 22px; }
+.guide-nav .btn { height: 60px; }

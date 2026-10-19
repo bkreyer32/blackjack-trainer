@@ -355,8 +355,10 @@ function InPlay(props: ModeProps) {
   const ramp = RAMPS[cs.spread];
   return (
     <div className="count-body scroll-y">
-      <p className="hint">Turns the Play tab into a counting session: the count carries across hands until the shoe is shuffled. Before each hand you pick a bet in units, graded against the ramp below. Every few hands you’ll be asked for the count. Basic-strategy coaching still runs. Weak-spot deals are paused while counting so the shoe stays natural.</p>
+      <p className="hint">Turns the Play tab into a counting session: the count carries across hands until the shoe is shuffled. Before each hand you pick a bet in units, graded against the ramp below. Every few hands you’ll be asked for the count. Basic-strategy coaching still runs; with Deviations on, decisions are graded against the Illustrious 18 / Fab 4 index play at the live true count, and you’re offered insurance when the dealer shows an ace. Weak-spot deals are paused while counting so the shoe stays natural.</p>
       <Seg label="Count while you play" value={cs.countInPlay} options={[[true, 'On'], [false, 'Off']]} onChange={(v) => set({ countInPlay: v })} />
+      <Seg label="Deviations (Hi-Lo index plays)" value={cs.deviations} options={[[true, 'On — grade index plays'], [false, 'Off — basic only']]} onChange={(v) => set({ deviations: v })} />
+      <button className="linkbtn" onClick={() => props.openGuide(0)}>How deviations work ›</button>
       <Seg label="Bet spread" value={cs.spread} options={[['1-8', '1–8 units'], ['1-12', '1–12 units']]} onChange={(v) => set({ spread: v })} />
       <div className="ramp">
         {ramp.map((r, k) => (

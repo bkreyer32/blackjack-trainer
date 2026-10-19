@@ -22,11 +22,13 @@ export interface CountSettings {
   spread: Spread;
   countInPlay: boolean;
   playQuizEvery: number;
+  /** grade against Hi-Lo index plays when counting */
+  deviations: boolean;
 }
 export interface Settings {
   /** 0..1 share of deals aimed at weak spots in Play mode */
   focus: number;
-  drillFilter: 'all' | HandKind;
+  drillFilter: 'all' | HandKind | 'index';
   count: CountSettings;
 }
 export interface ErrTally { n: number; correct: number; absErr: number }
@@ -44,7 +46,7 @@ export function recordErr(t: ErrTally, answer: number, actual: number, correct: 
 }
 export const DEFAULT_COUNT_SETTINGS: CountSettings = {
   speed: 1, flashCards: 20, flashDecks: 0, players: 3, quizEvery: 1, quizTc: true, showDecksLeft: true,
-  tcConvention: 'truncate', tcTolerance: false, spread: '1-8', countInPlay: false, playQuizEvery: 5,
+  tcConvention: 'truncate', tcTolerance: false, spread: '1-8', countInPlay: false, playQuizEvery: 5, deviations: true,
 };
 export const freshCountStats = (): CountStats => ({
   flash: { ...emptyErr(), bestSpeed: null, history: [] },
@@ -58,6 +60,7 @@ export interface Store {
   play: ModeStats & { hands: number; net: number };
   drill: ModeStats;
   count: CountStats;
+  dev: { drill: Record<string, Tally>; play: Record<string, Tally> };
 }
 
 const KEY = 'bj-trainer:v1';
@@ -75,6 +78,7 @@ export function freshStore(): Store {
     play: { ...emptyMode(), hands: 0, net: 0 },
     drill: emptyMode(),
     count: freshCountStats(),
+    dev: { drill: {}, play: {} },
   };
 }
 
@@ -89,6 +93,7 @@ export function loadStore(): Store {
       ...f, ...s,
       rules: { ...f.rules, ...s.rules },
       settings: { ...f.settings, ...s.settings, count: { ...DEFAULT_COUNT_SETTINGS, ...(s.settings?.count ?? {}) } },
+      dev: { drill: { ...(s.dev?.drill ?? {}) }, play: { ...(s.dev?.play ?? {}) } },
       count: {
         flash: { ...f.count.flash, ...cs.flash },
         rounds: { ...f.count.rounds, ...cs.rounds },
@@ -120,7 +125,8 @@ export function record(m: ModeStats, cell: CellRef, correct: boolean) {
 }
 
 /** Every cell a drill/targeted deal can produce. */
-export function allCells(filter: 'all' | HandKind = 'all'): CellRef[] {
+export function allCells(filter: 'all' | HandKind | 'index' = 'all'): CellRef[] {
+  if (filter === 'index') filter = 'all';
   const out: CellRef[] = [];
   for (const up of UPCARDS as Up[]) {
     if (filter === 'all' || filter === 'hard') for (let t = 5; t <= 19; t++) out.push({ kind: 'hard', row: t, up });
@@ -151,7 +157,7 @@ export function combinedTally(store: Store, k: string): Tally | undefined {
   };
 }
 
-export function pickWeighted(cells: CellRef[], weight: (c: CellRef) => number, rng: () => number = Math.random): CellRef {
+export function pickWeighted<T>(cells: T[], weight: (c: T) => number, rng: () => number = Math.random): T {
   const ws = cells.map(weight);
   const total = ws.reduce((a, b) => a + b, 0);
   let x = rng() * total;
@@ -172,3 +178,16 @@ export function weakSpots(store: Store, min = 2): { cell: CellRef; t: Tally; acc
 }
 
 export const pct = (t: Tally | undefined) => (t && t.n ? Math.round((100 * t.correct) / t.n) : null);
+
+export function recordDev(m: Record<string, Tally>, id: string, correct: boolean) {
+  const t = (m[id] ??= { n: 0, correct: 0 });
+  t.n++;
+  if (correct) t.correct++;
+  t.lastWrong = !correct;
+}
+export function devTally(store: Store, id: string): Tally | undefined {
+  const a = store.dev.drill[id];
+  const b = store.dev.play[id];
+  if (!a && !b) return undefined;
+  return { n: (a?.n ?? 0) + (b?.n ?? 0), correct: (a?.correct ?? 0) + (b?.correct ?? 0), lastWrong: a?.lastWrong || b?.lastWrong };
+}

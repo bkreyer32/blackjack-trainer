@@ -1,0 +1,67 @@
+Source: https://www.blackjackapprenticeship.com/blackjack-deviations/
+Retrieved: 2026-10-19
+
+ 
+-->
+ -->
+ -->
+ -->
+ -->
+ -->
+ -->
+ What are Blackjack Deviations? - Blackjack Apprenticeship 
+ Membership Features 
+ Plans & Pricing
+ Free Card Counting Mini Course 
+ How to Count Cards 
+ Blackjack Strategy Charts 
+ Blackjack Training Drills 
+ About 
+ Blog 
+ Podcast 
+ Blackjack Bootcamp 
+ Private Training 
+ Login 
+ What are Blackjack Deviations?
+ We get a lot of questions about Blackjack Deviations. Deviations are, arguably, the most misunderstood part of the game. So I thought I’d bring some light to the subject, based on the most common questions we receive. 
+ Download our Blackjack Deviations Charts 
+ We will send you the deviations charts for FREE if you sign up for our newsletter below:
+ So what are blackjack deviations? 
+ Deviations are simply times where you will alter your play. They are always mathematically driven, meaning they are never based off of a hunch or a pattern of wins or losses. There are 2 kinds of deviations: Playing Deviations and Betting Deviations.
+ TIP: There is an comprehensive section on Blackjack Deviations in our  Card Counting Training Course . To get a complete walk-through of the what, why, and how, along with memorization tips, check out the  Video Training Course . 
+ Betting Deviations  are times when you will change your bet. As the true count changes, the edge changes. When the casino has the edge, you will bet less, but as the edge moves to the player,  the player will bet more. This will always follow the strategy of your bet spread. And your bet spread should be mathematically calculated from a betting software or through Bankroll Coaching (which is included for Elite Members ).
+ Playing Deviations  are times where you will deviate from basic strategy because the composition of the cards has changed due to the true count changing. For example, normally you will hit a 12 against a 2. However, when the true count is above 3, it is statistically better to stand a 12 against a 2. So anytime before a true 3, you will hit 12 v 2; anytime above true 3, you will stand 12 v 2.
+ How Important are Playing Deviations? 
+ Yes. Roughly 60-80% of a card counter’s edge comes from PERFECT basic strategy, PERFECT counting, and PERFECTLY betting according to the true count. Then, Deviations account for the remaining 20-40%. I strongly recommend that people focus ALL their attention on basic strategy, counting, and true count conversion until they are always 100% accurate and getting bored. The reason for this is that you  cannot beat blackjack without perfect basic strategy, counting, and betting. Those are the foundations. When your foundation is solid, you can work on adding playing deviations. But you cannot put the cart before the horse.
+ “Why are playing deviations important?” 
+ There are a few ways that playing deviations are valuable. The main way is that they increase EV. Rather than thinking of deviations as “steering away from basic strategy”, you can think of deviations as the proper basic strategy for each true count. Take the 12 vs 2 decision for example. With a true count below 3, you will make more money in the long run if you always hit, but you will make more money above a true 3 if you always stand. It’s just that simple. But another way that playing deviations are valuable is because they lower risk and variance. By always making the correct decision, your bankroll will take fewer swings. For example, by always buying insurance at a true 3, you are protecting your bankroll and will have a lower risk game than if you avoid using that playing deviation.
+ “When do you perform deviations?” 
+ Betting Deviations:  You will need to calculate the true count between every round to perform betting deviations. Since your bet spread will likely change with every true count (at least up to a true 4 or 5), you will need to know the true count  every round to calculate the true count and bet accordingly. This is why practicing calculating the true count  is so important!
+ Playing Deviations: Whenever you are dealt a hand with a deviation index number. Even if you just calculated the true count for your betting decision, you will need to calculate it again when it’s your playing decision because the running count has likely changed. So before you make a signal, you will need to convert from running to true count and see if it justifies deviating from basic strategy. This might sound tricky, but if you follow the training and get faster and faster at basic strategy , counting, and true count conversions, adding this step will become more natural.
+ Hopefully this brings some clarity to blackjack deviations.
+ Back To Blog 
+ A complete blackjack card counting system designed to teach you how to beat the game of blackjack for big profits. 
+ How We Help
+ Membership 
+ Private Training 
+ Bootcamp 
+ Blackjack Apprenticeship Podcast 
+ Free Blackjack Training Drills 
+ Get Started
+ How To Play Blackjack 
+ How to Count Cards 
+ Free Mini-Course 
+ The 21st Century Card Counter 
+ Frequently Asked Questions 
+ Store 
+ Company
+ About 
+ Contact Us 
+ Holy Rollers 
+ Getting Gambling Help 
+ Terms of Use 
+ Privacy Policy 
+ Copyright Blackjack Apprenticeship © 2026 | All Rights Reserved
+ We use cookies to ensure that we give you the best experience on our website. If you continue to use this site we will assume that you are happy with it. Ok 
+ try{Typekit.load({ async: true });}catch(e){} 
+ -->
