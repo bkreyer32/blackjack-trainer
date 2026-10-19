@@ -24,6 +24,8 @@ export interface CountSettings {
   playQuizEvery: number;
   /** grade against Hi-Lo index plays when counting */
   deviations: boolean;
+  /** Pick (and get graded on) a count-based bet before each counted hand. Off = flat 1 unit. */
+  betSizing: boolean;
 }
 export interface Settings {
   /** 0..1 share of deals aimed at weak spots in Play mode */
@@ -46,7 +48,7 @@ export function recordErr(t: ErrTally, answer: number, actual: number, correct: 
 }
 export const DEFAULT_COUNT_SETTINGS: CountSettings = {
   speed: 1, flashCards: 20, flashDecks: 0, players: 3, quizEvery: 1, quizTc: true, showDecksLeft: true,
-  tcConvention: 'truncate', tcTolerance: false, spread: '1-8', countInPlay: false, playQuizEvery: 5, deviations: true,
+  tcConvention: 'truncate', tcTolerance: false, spread: '1-8', countInPlay: false, playQuizEvery: 5, deviations: true, betSizing: true,
 };
 export const freshCountStats = (): CountStats => ({
   flash: { ...emptyErr(), bestSpeed: null, history: [] },

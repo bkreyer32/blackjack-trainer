@@ -17,6 +17,7 @@ import type { Grader } from '../game/game';
 import { CountFeedback } from './Count';
 import { ACTION_LABEL, type ModeProps } from './common';
 import { HelpBubble } from '../ui/HelpBubble';
+import { preHandStep, afterQuizStep, FLAT_BET } from '../count/flow';
 
 function totalLabel(cards: GameState['dealer']) {
   const v = handValue(cards);
@@ -37,7 +38,7 @@ export function Play({ store, mutate, chart, openGuide }: ModeProps) {
   const counting = cs.countInPlay;
   const rcRef = useRef(0); // running count of every card seen from this shoe (completed rounds)
   const handsRef = useRef(0);
-  const [pre, setPre] = useState<null | 'rc' | 'tc' | 'bet'>(null);
+  const [pre, setPre] = useState<null | 'rc' | 'tc' | 'bet' | 'review'>(null);
   const [entry, setEntry] = useState('');
   const [rcAns, setRcAns] = useState<number | null>(null);
   const [countFb, setCountFb] = useState<{ rc: number; rcAns: number; tcAns: number | null; decks: number; cardsLeft: number } | null>(null);
@@ -109,8 +110,9 @@ export function Play({ store, mutate, chart, openGuide }: ModeProps) {
       setNotice('Shuffle! New shoe — count resets to 0.');
     }
     setEntry('');
-    if (handsRef.current > 0 && handsRef.current % cs.playQuizEvery === 0) setPre('rc');
-    else setPre('bet');
+    const step = preHandStep(handsRef.current, cs.playQuizEvery, cs.betSizing);
+    if (step === 'deal') { setPre(null); startRound(FLAT_BET); }
+    else setPre(step);
   };
 
   const decksLeft = decksRemaining(shoe.remaining);
@@ -127,7 +129,7 @@ export function Play({ store, mutate, chart, openGuide }: ModeProps) {
       if (tcA !== null) recordErr(st.count.play.tc, tcA, exactTrueCount(rc, decksLeft), gradeTrueCount(tcA, rc, decksLeft, cs.tcConvention, cs.tcTolerance));
     });
     setCountFb({ rc, rcAns: rcA, tcAns: tcA, decks: decksLeft, cardsLeft: shoe.remaining });
-    setPre('bet');
+    setPre(afterQuizStep(cs.betSizing));
   };
   const chooseBet = (bet: number) => {
     const tc = trueCount(rcRef.current, decksLeft, cs.tcConvention);
@@ -225,7 +227,7 @@ export function Play({ store, mutate, chart, openGuide }: ModeProps) {
             {insFb.right ? '✓' : '✗'} {insFb.took ? 'Took' : 'Declined'} insurance at TC {fmtSigned(insFb.tc, 1)} — {insuranceCorrect(insFb.tc) ? 'insure at +3 or more' : 'only insure at TC +3 or more'}{insFb.took ? ` (${insFb.net > 0 ? '+' : ''}${insFb.net}u)` : ''}
           </div>
         )}
-        {counting && betFb && (
+        {counting && cs.betSizing && betFb && (
           <div className={`betfb ${betFb.bet === betFb.want ? 'ok' : 'no'}`}>
             {betFb.bet === betFb.want ? '✓' : '✗'} Bet {betFb.bet}u{betFb.bet === betFb.want ? '' : ` · ramp says ${betFb.want}u`} at TC {fmtSigned(betFb.tc)}
           </div>
@@ -242,6 +244,12 @@ export function Play({ store, mutate, chart, openGuide }: ModeProps) {
             <Keypad key="tc" value={entry} onChange={setEntry} onSubmit={(n) => finishQuiz(rcAns!, n)} allowDecimal={cs.tcTolerance} prompt="True count?"
               sub={`${cs.showDecksLeft ? `Decks remaining ≈ ${decksLeft} · ` : ''}${cs.tcConvention === 'truncate' ? 'truncate toward 0' : cs.tcConvention}${cs.tcTolerance ? ' · ±0.5 ok' : ''}`} />
           )}
+        </div>
+      ) : pre === 'review' ? (
+        <div className="actions">
+          {countFb && <div className="feedback-slot"><CountFeedback fb={countFb} conv={cs.tcConvention} tol={cs.tcTolerance} /></div>}
+          <div className="bet-label">Bet sizing is off · flat {FLAT_BET} unit</div>
+          <button className="btn deal" onClick={() => { setPre(null); startRound(FLAT_BET); }}>Deal</button>
         </div>
       ) : pre === 'bet' ? (
         <div className="actions">
@@ -264,7 +272,7 @@ export function Play({ store, mutate, chart, openGuide }: ModeProps) {
         ) : g.phase === 'player' ? (
           <div className="with-help-row"><div className="flex1"><ActionPad actions={actions} enabled={enabled} onAct={onAct} /></div><HelpBubble id="actions" label="Action buttons" /></div>
         ) : (
-          <div className="with-help-row"><button className="btn deal flex1" onClick={onDeal}>{counting ? 'Next hand (bet)' : 'Deal'}</button><HelpBubble id="deal" label="Deal" /></div>
+          <div className="with-help-row"><button className="btn deal flex1" onClick={onDeal}>{counting && cs.betSizing ? 'Next hand (bet)' : 'Deal'}</button><HelpBubble id="deal" label="Deal" /></div>
         )}
       </div>
       )}

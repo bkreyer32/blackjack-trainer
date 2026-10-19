@@ -357,16 +357,19 @@ function InPlay(props: ModeProps) {
   const ramp = RAMPS[cs.spread];
   return (
     <div className="count-body scroll-y">
-      <p className="hint">Turns the Play tab into a counting session: the count carries across hands until the shoe is shuffled. Before each hand you pick a bet in units, graded against the ramp below. Every few hands you’ll be asked for the count. Basic-strategy coaching still runs; with Deviations on, decisions are graded against the Illustrious 18 / Fab 4 index play at the live true count, and you’re offered insurance when the dealer shows an ace. Weak-spot deals are paused while counting so the shoe stays natural.</p>
+      <p className="hint">Turns the Play tab into a counting session: the count carries across hands until the shoe is shuffled. With Bet sizing on, you pick a bet in units before each hand, graded against the ramp below; with it off, every hand is a flat 1 unit. Every few hands you’ll be asked for the count. Basic-strategy coaching still runs; with Deviations on, decisions are graded against the Illustrious 18 / Fab 4 index play at the live true count, and you’re offered insurance when the dealer shows an ace. Weak-spot deals are paused while counting so the shoe stays natural.</p>
       <Seg help="countInPlay" label="Count while you play" value={cs.countInPlay} options={[[true, 'On'], [false, 'Off']]} onChange={(v) => set({ countInPlay: v })} />
+      <Seg help="betSizing" label="Bet sizing" value={cs.betSizing} options={[[true, 'On — pick & grade bets'], [false, 'Off — flat 1 unit']]} onChange={(v) => set({ betSizing: v })} />
       <Seg help="deviations" label="Deviations (Hi-Lo index plays)" value={cs.deviations} options={[[true, 'On — grade index plays'], [false, 'Off — basic only']]} onChange={(v) => set({ deviations: v })} />
       <button className="linkbtn" onClick={() => props.openGuide(0)}>How deviations work ›</button>
+      {cs.betSizing ? <>
       <Seg help="spread" label="Bet spread" value={cs.spread} options={[['1-8', '1–8 units'], ['1-12', '1–12 units']]} onChange={(v) => set({ spread: v })} />
       <div className="ramp">
         {ramp.map((r, k) => (
           <div key={k} className="ramp-step"><div className="muted small">TC {k === 0 ? `≤ ${r.tc}` : k === ramp.length - 1 ? `${r.tc}+` : r.tc}</div><div className="ramp-u">{r.units}u</div></div>
         ))}
       </div>
+      </> : <p className="muted small">Bet sizing off: every hand is a flat 1 unit and bets aren’t graded. Turn it on to set a spread.</p>}
       <Seg help="playQuizEvery" label="Count quiz every" value={cs.playQuizEvery} options={[[1, '1 hand'], [3, '3'], [5, '5'], [10, '10']]} onChange={(v) => set({ playQuizEvery: v })} />
       <TcOptions {...props} />
       <p className="muted small">Units only — this is a practice tool, not real-money play.</p>

@@ -33,7 +33,7 @@ describe('Play-tab help coverage', () => {
     const body = fnBody(code, 'InPlay') + fnBody(code, 'TcOptions');
     const segs = body.match(/<Seg[<\s]/g) ?? [];
     const withHelp = body.match(/<Seg(<[^>]*>)?\s+help="\w+"/g) ?? [];
-    expect(segs.length).toBe(7);
+    expect(segs.length).toBe(8);
     expect(withHelp.length).toBe(segs.length);
   });
 
