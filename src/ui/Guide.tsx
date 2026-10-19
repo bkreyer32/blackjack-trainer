@@ -45,6 +45,18 @@ function pages(rules: Rules): Page[] {
       ),
     },
     {
+      title: 'What are the Illustrious 18 & Fab 4?',
+      body: (
+        <>
+          <p>There are hundreds of possible index plays. In <i>Blackjack Attack</i>, Don Schlesinger picked out the ones worth the most money for Hi-Lo players.</p>
+          <p><b>Illustrious 18:</b> the 18 most valuable index plays, <b>listed in order of value</b>. <b>Insurance at TC +3 is #1</b>, the single most valuable. 16 vs 10 is #2.</p>
+          <p><b>Fab 4:</b> the four most valuable <b>late-surrender</b> deviations: 14 vs 10, 15 vs 10, 15 vs 9 and 15 vs A. They only apply where surrender is offered.</p>
+          <div className="g-ex">Why not learn them all? In a six-deck game, knowing only these plays gives you <b>about 80–85% of the value</b> of knowing every index number. Simulations with just these 22 come out close to the full set.</div>
+          <p className="muted">The gap is bigger in single- and double-deck games. Can't memorize all 22? Start at the top of the list and work down. (Sources: Wizard of Odds, reprinting Schlesinger with permission; blackjackinfo.com.)</p>
+        </>
+      ),
+    },
+    {
       title: 'Example: 16 vs 10 (index 0)',
       body: (
         <>

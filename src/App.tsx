@@ -5,6 +5,7 @@ import { chartFor } from './engine/strategy';
 import { rulesLabel } from './engine/types';
 import { Sheet } from './ui/Sheet';
 import { SettingsPanel } from './modes/Settings';
+import { HelpBubble } from './ui/HelpBubble';
 import { Guide } from './ui/Guide';
 
 function initialMode() {
@@ -34,9 +35,12 @@ export default function App() {
     <div className="app">
       <header className="top">
         <div className="title">{def.label}</div>
-        <button className="rules-chip" onClick={() => setSettingsOpen(true)} aria-label="Rules and settings">
-          {rulesLabel(store.rules)} ⚙︎
-        </button>
+        <div className="top-right">
+          <button className="rules-chip" onClick={() => setSettingsOpen(true)} aria-label="Rules and settings">
+            {rulesLabel(store.rules)} ⚙︎
+          </button>
+          {mode === 'play' && <HelpBubble id="rulesChip" />}
+        </div>
       </header>
       <main className="main">
         <Comp key={`${mode}-${store.rules.decks}`} store={store} mutate={mutate} chart={chart} openGuide={openGuide} />

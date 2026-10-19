@@ -7,6 +7,8 @@ import { hiLo, runningCount, decksRemaining, exactTrueCount, trueCount, gradeTru
 import { scriptRound, type RoundEvent } from '../count/rounds';
 import { recordErr, type CountSettings } from '../stats/stats';
 import type { ModeProps } from './common';
+import { HelpBubble } from '../ui/HelpBubble';
+import type { HelpId } from '../ui/help';
 
 type Sub = 'flash' | 'rounds' | 'play';
 
@@ -46,10 +48,10 @@ function SpeedSlider({ value, onChange }: { value: number; onChange: (v: number)
   );
 }
 
-function Seg<T extends string | number | boolean>({ label, value, options, onChange }: { label?: string; value: T; options: [T, string][]; onChange: (v: T) => void }) {
+function Seg<T extends string | number | boolean>({ label, value, options, onChange, help }: { label?: string; value: T; options: [T, string][]; onChange: (v: T) => void; help?: HelpId }) {
   return (
     <div className="opt">
-      {label && <div className="opt-label">{label}</div>}
+      {label && <div className={`opt-label${help ? ' with-help' : ''}`}>{label}{help && <HelpBubble id={help} label={label} />}</div>}
       <div className="seg small">
         {options.map(([v, l]) => <button key={String(v)} className={v === value ? 'on' : ''} onClick={() => onChange(v)}>{l}</button>)}
       </div>
@@ -341,10 +343,10 @@ function TcOptions(props: ModeProps) {
   const [cs, set] = useCountSettings(props);
   return (
     <>
-      <Seg<TcConvention> label="True count convention" value={cs.tcConvention} options={[['truncate', 'Truncate'], ['round', 'Round'], ['floor', 'Floor']]} onChange={(v) => set({ tcConvention: v })} />
+      <Seg<TcConvention> help="tcConvention" label="True count convention" value={cs.tcConvention} options={[['truncate', 'Truncate'], ['round', 'Round'], ['floor', 'Floor']]} onChange={(v) => set({ tcConvention: v })} />
       <p className="muted small">{TC_CONVENTION_LABEL[cs.tcConvention]}. Decks remaining are estimated to the nearest ½ deck.</p>
-      <Seg label="Tolerance" value={cs.tcTolerance} options={[[false, 'Exact'], [true, '±0.5 of exact TC']]} onChange={(v) => set({ tcTolerance: v })} />
-      <Seg label="Show decks-remaining estimate" value={cs.showDecksLeft} options={[[true, 'Show'], [false, 'Hide']]} onChange={(v) => set({ showDecksLeft: v })} />
+      <Seg help="tcTolerance" label="Tolerance" value={cs.tcTolerance} options={[[false, 'Exact'], [true, '±0.5 of exact TC']]} onChange={(v) => set({ tcTolerance: v })} />
+      <Seg help="showDecksLeft" label="Show decks-remaining estimate" value={cs.showDecksLeft} options={[[true, 'Show'], [false, 'Hide']]} onChange={(v) => set({ showDecksLeft: v })} />
     </>
   );
 }
@@ -356,16 +358,16 @@ function InPlay(props: ModeProps) {
   return (
     <div className="count-body scroll-y">
       <p className="hint">Turns the Play tab into a counting session: the count carries across hands until the shoe is shuffled. Before each hand you pick a bet in units, graded against the ramp below. Every few hands you’ll be asked for the count. Basic-strategy coaching still runs; with Deviations on, decisions are graded against the Illustrious 18 / Fab 4 index play at the live true count, and you’re offered insurance when the dealer shows an ace. Weak-spot deals are paused while counting so the shoe stays natural.</p>
-      <Seg label="Count while you play" value={cs.countInPlay} options={[[true, 'On'], [false, 'Off']]} onChange={(v) => set({ countInPlay: v })} />
-      <Seg label="Deviations (Hi-Lo index plays)" value={cs.deviations} options={[[true, 'On — grade index plays'], [false, 'Off — basic only']]} onChange={(v) => set({ deviations: v })} />
+      <Seg help="countInPlay" label="Count while you play" value={cs.countInPlay} options={[[true, 'On'], [false, 'Off']]} onChange={(v) => set({ countInPlay: v })} />
+      <Seg help="deviations" label="Deviations (Hi-Lo index plays)" value={cs.deviations} options={[[true, 'On — grade index plays'], [false, 'Off — basic only']]} onChange={(v) => set({ deviations: v })} />
       <button className="linkbtn" onClick={() => props.openGuide(0)}>How deviations work ›</button>
-      <Seg label="Bet spread" value={cs.spread} options={[['1-8', '1–8 units'], ['1-12', '1–12 units']]} onChange={(v) => set({ spread: v })} />
+      <Seg help="spread" label="Bet spread" value={cs.spread} options={[['1-8', '1–8 units'], ['1-12', '1–12 units']]} onChange={(v) => set({ spread: v })} />
       <div className="ramp">
         {ramp.map((r, k) => (
           <div key={k} className="ramp-step"><div className="muted small">TC {k === 0 ? `≤ ${r.tc}` : k === ramp.length - 1 ? `${r.tc}+` : r.tc}</div><div className="ramp-u">{r.units}u</div></div>
         ))}
       </div>
-      <Seg label="Count quiz every" value={cs.playQuizEvery} options={[[1, '1 hand'], [3, '3'], [5, '5'], [10, '10']]} onChange={(v) => set({ playQuizEvery: v })} />
+      <Seg help="playQuizEvery" label="Count quiz every" value={cs.playQuizEvery} options={[[1, '1 hand'], [3, '3'], [5, '5'], [10, '10']]} onChange={(v) => set({ playQuizEvery: v })} />
       <TcOptions {...props} />
       <p className="muted small">Units only — this is a practice tool, not real-money play.</p>
     </div>

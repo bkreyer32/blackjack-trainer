@@ -16,6 +16,7 @@ import { correctPlay, insuranceCorrect } from '../engine/deviations';
 import type { Grader } from '../game/game';
 import { CountFeedback } from './Count';
 import { ACTION_LABEL, type ModeProps } from './common';
+import { HelpBubble } from '../ui/HelpBubble';
 
 function totalLabel(cards: GameState['dealer']) {
   const v = handValue(cards);
@@ -169,10 +170,10 @@ export function Play({ store, mutate, chart, openGuide }: ModeProps) {
   return (
     <div className="screen play">
       {pre === 'rc' || pre === 'tc' ? <div className="flex1" /> : (<>
-      <div className="scoreline">
+      <div className="scoreline with-help">
         <span>Accuracy {totalN ? Math.round((100 * totalC) / totalN) : '–'}%</span>
         <span>Shoe {Math.round((100 * shoe.remaining) / (rules.decks * 52))}%{counting ? ` · ≈${decksLeft}D` : ''}</span>
-        <span>Net {store.play.net >= 0 ? '+' : ''}{store.play.net} u</span>
+        <span>Net {store.play.net >= 0 ? '+' : ''}{store.play.net} u<HelpBubble id="scoreline" /></span>
       </div>
       <div className="table">
         <div className="zone">
@@ -235,7 +236,8 @@ export function Play({ store, mutate, chart, openGuide }: ModeProps) {
       {pre === 'rc' || pre === 'tc' ? (
         <div className="actions">
           {pre === 'rc' ? (
-            <Keypad key="rc" value={entry} onChange={setEntry} onSubmit={submitRc} prompt="Count check: running count?" sub={`${handsRef.current} hands into this shoe`} />
+            <><Keypad key="rc" value={entry} onChange={setEntry} onSubmit={submitRc} prompt="Count check: running count?" sub={`${handsRef.current} hands into this shoe`} />
+            <div className="fb-help center"><HelpBubble id="countQuiz" label="Count check" /></div></>
           ) : (
             <Keypad key="tc" value={entry} onChange={setEntry} onSubmit={(n) => finishQuiz(rcAns!, n)} allowDecimal={cs.tcTolerance} prompt="True count?"
               sub={`${cs.showDecksLeft ? `Decks remaining ≈ ${decksLeft} · ` : ''}${cs.tcConvention === 'truncate' ? 'truncate toward 0' : cs.tcConvention}${cs.tcTolerance ? ' · ±0.5 ok' : ''}`} />
@@ -244,7 +246,7 @@ export function Play({ store, mutate, chart, openGuide }: ModeProps) {
       ) : pre === 'bet' ? (
         <div className="actions">
           {countFb && <div className="feedback-slot"><CountFeedback fb={countFb} conv={cs.tcConvention} tol={cs.tcTolerance} /></div>}
-          <div className="bet-label">Your bet (units){cs.showDecksLeft ? ` · ≈${decksLeft} decks left` : ''}</div>
+          <div className="bet-label">Your bet (units){cs.showDecksLeft ? ` · ≈${decksLeft} decks left` : ''}<HelpBubble id="bet" /></div>
           <div className="pad-row big">
             {betOptions(cs.spread).map((u) => <button key={u} className="btn act bet" onClick={() => chooseBet(u)}>{u}</button>)}
           </div>
@@ -253,16 +255,16 @@ export function Play({ store, mutate, chart, openGuide }: ModeProps) {
       <div className="actions">
         {pendingIns ? (
           <div className="pad">
-            <div className="bet-label">Dealer shows an ace — insurance?{cs.showDecksLeft ? ` · ≈${decksLeft} decks left` : ''}</div>
+            <div className="bet-label">Dealer shows an ace — insurance?{cs.showDecksLeft ? ` · ≈${decksLeft} decks left` : ''}<HelpBubble id="insurance" /></div>
             <div className="pad-row big">
               <button className="btn act a-surrender" onClick={() => answerInsurance(false)}>No insurance</button>
               <button className="btn act a-double" onClick={() => answerInsurance(true)}>Insure</button>
             </div>
           </div>
         ) : g.phase === 'player' ? (
-          <ActionPad actions={actions} enabled={enabled} onAct={onAct} />
+          <div className="with-help-row"><div className="flex1"><ActionPad actions={actions} enabled={enabled} onAct={onAct} /></div><HelpBubble id="actions" label="Action buttons" /></div>
         ) : (
-          <button className="btn deal" onClick={onDeal}>{counting ? 'Next hand (bet)' : 'Deal'}</button>
+          <div className="with-help-row"><button className="btn deal flex1" onClick={onDeal}>{counting ? 'Next hand (bet)' : 'Deal'}</button><HelpBubble id="deal" label="Deal" /></div>
         )}
       </div>
       )}

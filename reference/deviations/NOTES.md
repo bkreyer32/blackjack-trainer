@@ -39,3 +39,13 @@ Exact TC = running count ÷ decks remaining, where decks remaining = cards left 
 - 10,10 splits: split when splitting is available (hand limit not reached); otherwise stand. The index doesn't depend on DAS in the sources.
 - Fab 4 is off unless late surrender is on.
 - Insurance: basic never; Hi-Lo takes it at TC ≥ +3 (also covers even money).
+
+## "What are the Illustrious 18 & Fab 4?" guide page: claims and sources
+Each statement on the guide page (Guide.tsx, page 4) and the Index-tab header comes from the saved text:
+- **Picked by Schlesinger, published in *Blackjack Attack*:** woo-high-low.txt l.352 ("They appear in Blackjack Attack by Don Schlesinger, and are republished here with permission"). Also blackjackinfo.txt l.135 ("Don Schlesinger's ranked list of the eighteen highest-value index plays, published in Blackjack Attack").
+- **Listed in order of value; if you can't memorize them all, start at the top:** woo-high-low.txt l.352 ("The lists are given in order of value. If you can't memorize all of them, start at the top, and work your way down."). Also blackjackinfo.txt l.135 and bjtrainerfyi.txt l.406.
+- **Insurance is #1 and the single most valuable; 16 vs 10 is #2:** blackjackinfo.txt l.135 ("insurance at the top of the list is the single most valuable of them all") and bjtrainerfyi.txt l.406 ("Insurance at true count +3 is #1; the famous 16 vs 10 stand is #2").
+- **Fab 4 = the four most valuable late-surrender deviations, only where surrender is offered:** blackjackinfo.txt l.139 ("Schlesinger's four most valuable late-surrender deviations, and they only apply at a table that offers surrender"). Also bjtrainerfyi.txt l.427.
+- **About 80–85% of the value of all index numbers in a six-deck game; the gap is bigger in 1–2 deck games:** woo-high-low.txt l.352 ("Knowing only these will give the counter 80% to 85% of the value of knowing every index number, based on a six-deck game. The difference is more in single and double-deck games.") and blackjackinfo.txt l.135 ("in a six-deck game, knowing just these eighteen captures roughly 80 to 85 percent of the entire gain available from index play").
+- **Simulations with just these 22 come out close to the full set:** woo-high-low.txt l.540 ("Simulations were run using both the Illustrious 18 and Fab 4 (I18+F4) above, and with the full table. The difference is not much, which shows that knowing the top 22 gets you most of the benefit of knowing all of them.").
+- **Not used:** count21.txt l.115's "90% of the value comes from the first few deviations" (no source or method given; it conflicts with the 80–85% figure for the whole list). bja-deviations.txt's "deviations account for 20–40% of a counter's edge" (a different claim; left out to keep the page short).

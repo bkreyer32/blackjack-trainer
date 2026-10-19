@@ -259,3 +259,29 @@ h3 { font-size: 14px; text-transform: uppercase; letter-spacing: .05em; color: v
 .guide-dots button { width: 9px; height: 9px; border-radius: 5px; background: var(--line); padding: 0; }
 .guide-dots button.on { background: var(--accent); width: 22px; }
 .guide-nav .btn { height: 60px; }
+
+/* ---- help bubbles ---- */
+.help-q { width: 44px; height: 44px; min-width: 44px; margin: -12px -10px -12px -6px; padding: 0; background: none; border: 0;
+  display: inline-flex; align-items: center; justify-content: center; vertical-align: middle; cursor: pointer; }
+.help-q span { width: 20px; height: 20px; border-radius: 50%; border: 1px solid var(--line); background: var(--panel);
+  color: var(--muted); font-size: 12px; font-weight: 700; line-height: 18px; text-align: center; display: block; }
+.help-q:active span { background: var(--line); color: var(--text, #fff); }
+.help-backdrop { position: fixed; inset: 0; z-index: 80; background: rgba(0,0,0,.45); display: flex; align-items: flex-end; justify-content: center;
+  padding: 0 12px calc(env(safe-area-inset-bottom) + 84px); }
+.help-pop { width: 100%; max-width: 480px; background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 14px 16px 10px;
+  box-shadow: 0 10px 40px rgba(0,0,0,.5); font-size: 15px; line-height: 1.4; }
+.help-pop p { margin: 8px 0; }
+.help-head { display: flex; align-items: center; justify-content: space-between; font-size: 16px; }
+.help-x { width: 44px; height: 44px; margin: -10px -12px -10px 0; background: none; border: 0; color: var(--muted); font-size: 18px; }
+.help-when { color: var(--muted); }
+.opt-label.with-help { display: flex; align-items: center; gap: 2px; min-height: 24px; }
+.top-right { display: flex; align-items: center; gap: 2px; }
+.scoreline.with-help { align-items: center; }
+.bet-label .help-q, .fb-help .help-q { margin-top: -14px; margin-bottom: -14px; }
+.i18-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.with-help-row { display: flex; align-items: center; gap: 4px; }
+.with-help-row > .help-q { margin: 0 -8px 0 0; }
+.fb-help.center { text-align: center; margin-top: -4px; }
+.flex1 { flex: 1; min-width: 0; }
+.i18-card { display: block; width: 100%; text-align: left; background: var(--panel); border: 1px solid var(--line); border-radius: 12px;
+  color: var(--text); padding: 10px 12px; margin: 8px 0 4px; min-height: 44px; font-size: 14px; }

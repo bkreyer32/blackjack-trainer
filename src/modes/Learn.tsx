@@ -84,6 +84,10 @@ function IndexList({ store, chart, openGuide }: ModeProps) {
   return (
     <div className="idx-list">
       <button className="btn wide guide-btn" onClick={() => openGuide(0)}>📘 How deviations work</button>
+      <button className="i18-card" onClick={() => openGuide(3)}>
+        <div><b>What are the Illustrious 18 &amp; Fab 4?</b></div>
+        <div className="muted small">Schlesinger's most valuable index plays, ranked by value. Insurance is #1 ›</div>
+      </button>
       <p className="hint">Hi-Lo index plays for <b>{rules.h17 ? 'H17' : 'S17'}</b>{rules.decks <= 2 ? ` · ${rules.decks} deck${rules.decks > 1 ? 's' : ''}` : ''}. Make the play at TC ≥ index, otherwise {''}
         the other way. TC = running count ÷ decks left, compared exactly (rounded down).</p>
       {rules.decks <= 2 && <p className="note">Reliable free single/double-deck I18 tables aren't published, so this uses the multi-deck set. Entries that contradict {rules.decks}-deck basic strategy are switched off.</p>}
