@@ -82,7 +82,7 @@ export function cardsForCell(cell: CellRef, rng: () => number): [number, number]
   return opts[Math.floor(rng() * opts.length)];
 }
 
-export function deal(shoe: Shoe, rules: Rules, target: DealTarget, rng: () => number = Math.random): GameState {
+export function deal(shoe: Shoe, rules: Rules, target: DealTarget, rng: () => number = Math.random, bet = 1): GameState {
   if (shoe.needsShuffle) shoe.shuffle();
   let p1: Card, p2: Card, up: Card;
   if (target) {
@@ -100,7 +100,7 @@ export function deal(shoe: Shoe, rules: Rules, target: DealTarget, rng: () => nu
     ...initialGame,
     phase: 'player',
     dealer: [up, hole],
-    hands: [{ cards: [p1, p2], bet: 1, doubled: false, surrendered: false, fromSplit: false, splitAces: false, done: false }],
+    hands: [{ cards: [p1, p2], bet, doubled: false, surrendered: false, fromSplit: false, splitAces: false, done: false }],
     feedback: [],
   };
   const dealerBJ = isBlackjack(s.dealer);

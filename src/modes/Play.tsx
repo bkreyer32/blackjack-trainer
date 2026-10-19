@@ -9,6 +9,10 @@ import { codeAt, cellKey, type CellRef } from '../engine/decide';
 import { CODE_NAME, explain, rowLabel } from '../engine/explain';
 import { allCells, cellWeight, combinedTally, pickWeighted, record } from '../stats/stats';
 import { ActionPad } from './Drill';
+import { Keypad, fmtSigned } from '../ui/Keypad';
+import { runningCount, decksRemaining, exactTrueCount, trueCount, gradeTrueCount, rampBet, betOptions } from '../count/hilo';
+import { recordErr } from '../stats/stats';
+import { CountFeedback } from './Count';
 import { ACTION_LABEL, type ModeProps } from './common';
 
 function totalLabel(cards: GameState['dealer']) {
@@ -26,17 +30,78 @@ export function Play({ store, mutate, chart }: ModeProps) {
   const [g, setG] = useState<GameState>(initialGame);
   const [targeted, setTargeted] = useState<CellRef | null>(null);
   const [showWhy, setShowWhy] = useState(false);
+  const cs = store.settings.count;
+  const counting = cs.countInPlay;
+  const rcRef = useRef(0); // running count of every card seen from this shoe (completed rounds)
+  const handsRef = useRef(0);
+  const [pre, setPre] = useState<null | 'rc' | 'tc' | 'bet'>(null);
+  const [entry, setEntry] = useState('');
+  const [rcAns, setRcAns] = useState<number | null>(null);
+  const [countFb, setCountFb] = useState<{ rc: number; rcAns: number; tcAns: number | null; decks: number; cardsLeft: number } | null>(null);
+  const [betFb, setBetFb] = useState<{ bet: number; want: number; tc: number } | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
 
-  const onDeal = () => {
+  const startRound = (bet: number) => {
     let target: CellRef | null = null;
-    if (Math.random() < store.settings.focus) {
+    if (!counting && Math.random() < store.settings.focus) {
       target = pickWeighted(allCells(), (c) => cellWeight(combinedTally(store, cellKey(c))));
     }
     setTargeted(target);
     setShowWhy(false);
-    const s = deal(shoe, rules, target);
+    const s = deal(shoe, rules, target, Math.random, bet);
     setG(s);
-    if (s.phase === 'done') mutate((st) => { st.play.hands++; st.play.net += s.roundNet; });
+    if (s.phase === 'done') roundOver(s);
+  };
+
+  /** Called when a round finishes: book stats and add every (now face-up) card to the count. */
+  const roundOver = (s: GameState) => {
+    rcRef.current += runningCount([...s.dealer, ...s.hands.flatMap((h) => h.cards)]);
+    handsRef.current++;
+    mutate((st) => { st.play.hands++; st.play.net += s.roundNet; });
+  };
+
+  const onDeal = () => {
+    if (!counting) return startRound(1);
+    setCountFb(null); setBetFb(null); setNotice(null);
+    if (shoe.needsShuffle) {
+      shoe.shuffle();
+      rcRef.current = 0;
+      handsRef.current = 0;
+      setNotice('Shuffle! New shoe — count resets to 0.');
+    }
+    setEntry('');
+    if (handsRef.current > 0 && handsRef.current % cs.playQuizEvery === 0) setPre('rc');
+    else setPre('bet');
+  };
+
+  const decksLeft = decksRemaining(shoe.remaining);
+  const submitRc = (n: number) => {
+    setRcAns(n);
+    setEntry('');
+    if (cs.quizTc) setPre('tc');
+    else finishQuiz(n, null);
+  };
+  const finishQuiz = (rcA: number, tcA: number | null) => {
+    const rc = rcRef.current;
+    mutate((st) => {
+      recordErr(st.count.play.rc, rcA, rc, rcA === rc);
+      if (tcA !== null) recordErr(st.count.play.tc, tcA, exactTrueCount(rc, decksLeft), gradeTrueCount(tcA, rc, decksLeft, cs.tcConvention, cs.tcTolerance));
+    });
+    setCountFb({ rc, rcAns: rcA, tcAns: tcA, decks: decksLeft, cardsLeft: shoe.remaining });
+    setPre('bet');
+  };
+  const chooseBet = (bet: number) => {
+    const tc = trueCount(rcRef.current, decksLeft, cs.tcConvention);
+    const want = rampBet(tc, cs.spread);
+    setBetFb({ bet, want, tc });
+    mutate((st) => {
+      const b = st.count.play.bet;
+      b.n++;
+      if (bet === want) b.correct++;
+      b.absErr += Math.abs(bet - want);
+    });
+    setPre(null);
+    startRound(bet);
   };
 
   const onAct = (a: Action) => {
@@ -44,10 +109,8 @@ export function Play({ store, mutate, chart }: ModeProps) {
     const fb = s.feedback[s.feedback.length - 1];
     setShowWhy(!fb.correct);
     setG(s);
-    mutate((st) => {
-      record(st.play, fb.cell, fb.correct);
-      if (s.phase === 'done') { st.play.hands++; st.play.net += s.roundNet; }
-    });
+    mutate((st) => { record(st.play, fb.cell, fb.correct); });
+    if (s.phase === 'done') roundOver(s);
   };
 
   const av = availability(g, rules);
@@ -63,9 +126,10 @@ export function Play({ store, mutate, chart }: ModeProps) {
 
   return (
     <div className="screen play">
+      {pre === 'rc' || pre === 'tc' ? <div className="flex1" /> : (<>
       <div className="scoreline">
         <span>Accuracy {totalN ? Math.round((100 * totalC) / totalN) : '–'}%</span>
-        <span>Shoe {Math.round((100 * shoe.remaining) / (rules.decks * 52))}%</span>
+        <span>Shoe {Math.round((100 * shoe.remaining) / (rules.decks * 52))}%{counting ? ` · ≈${decksLeft}D` : ''}</span>
         <span>Net {store.play.net >= 0 ? '+' : ''}{store.play.net} u</span>
       </div>
       <div className="table">
@@ -106,15 +170,41 @@ export function Play({ store, mutate, chart }: ModeProps) {
           </div>
         )}
         {targeted && g.phase !== 'idle' && <div className="target-tag">🎯 Weak-spot deal</div>}
+        {counting && notice && <div className="target-tag">{notice}</div>}
+        {counting && betFb && (
+          <div className={`betfb ${betFb.bet === betFb.want ? 'ok' : 'no'}`}>
+            {betFb.bet === betFb.want ? '✓' : '✗'} Bet {betFb.bet}u{betFb.bet === betFb.want ? '' : ` · ramp says ${betFb.want}u`} at TC {fmtSigned(betFb.tc)}
+          </div>
+        )}
       </div>
 
+      </>)}
+      {pre === 'rc' || pre === 'tc' ? (
+        <div className="actions">
+          {pre === 'rc' ? (
+            <Keypad key="rc" value={entry} onChange={setEntry} onSubmit={submitRc} prompt="Count check: running count?" sub={`${handsRef.current} hands into this shoe`} />
+          ) : (
+            <Keypad key="tc" value={entry} onChange={setEntry} onSubmit={(n) => finishQuiz(rcAns!, n)} allowDecimal={cs.tcTolerance} prompt="True count?"
+              sub={`${cs.showDecksLeft ? `Decks remaining ≈ ${decksLeft} · ` : ''}${cs.tcConvention === 'truncate' ? 'truncate toward 0' : cs.tcConvention}${cs.tcTolerance ? ' · ±0.5 ok' : ''}`} />
+          )}
+        </div>
+      ) : pre === 'bet' ? (
+        <div className="actions">
+          {countFb && <div className="feedback-slot"><CountFeedback fb={countFb} conv={cs.tcConvention} tol={cs.tcTolerance} /></div>}
+          <div className="bet-label">Your bet (units){cs.showDecksLeft ? ` · ≈${decksLeft} decks left` : ''}</div>
+          <div className="pad-row big">
+            {betOptions(cs.spread).map((u) => <button key={u} className="btn act bet" onClick={() => chooseBet(u)}>{u}</button>)}
+          </div>
+        </div>
+      ) : (
       <div className="actions">
         {g.phase === 'player' ? (
           <ActionPad actions={actions} enabled={enabled} onAct={onAct} />
         ) : (
-          <button className="btn deal" onClick={onDeal}>Deal</button>
+          <button className="btn deal" onClick={onDeal}>{counting ? 'Next hand (bet)' : 'Deal'}</button>
         )}
       </div>
+      )}
     </div>
   );
 }

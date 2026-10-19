@@ -2,7 +2,7 @@ import type { HandKind } from '../engine/types';
 import { upLabel } from '../engine/types';
 import { CODE_NAME, rowLabel } from '../engine/explain';
 import { codeAt } from '../engine/decide';
-import { pct, weakSpots, type Tally } from '../stats/stats';
+import { pct, weakSpots, freshCountStats, type Tally, type ErrTally } from '../stats/stats';
 import type { ModeProps } from './common';
 
 function Bar({ label, t }: { label: string; t: Tally }) {
@@ -48,7 +48,40 @@ export function Stats({ store, mutate, chart }: ModeProps) {
           ))}
         </div>
       )}
-      <button className="btn wide ghost danger" onClick={() => { if (confirm('Reset all stats on this device?')) mutate((s) => { const f = { cells: {}, kinds: { hard: { n: 0, correct: 0 }, soft: { n: 0, correct: 0 }, pair: { n: 0, correct: 0 } } }; s.play = { ...f, hands: 0, net: 0 }; s.drill = structuredClone(f); }); }}>Reset stats</button>
+      <h3>Card counting (Hi-Lo)</h3>
+      <CountStatsView store={store} />
+      <button className="btn wide ghost danger" onClick={() => { if (confirm('Reset all stats on this device?')) mutate((s) => { const f = { cells: {}, kinds: { hard: { n: 0, correct: 0 }, soft: { n: 0, correct: 0 }, pair: { n: 0, correct: 0 } } }; s.play = { ...f, hands: 0, net: 0 }; s.drill = structuredClone(f); s.count = freshCountStats(); }); }}>Reset stats</button>
     </div>
+  );
+}
+
+function sumErr(...ts: ErrTally[]): ErrTally {
+  return ts.reduce((a, t) => ({ n: a.n + t.n, correct: a.correct + t.correct, absErr: a.absErr + t.absErr }), { n: 0, correct: 0, absErr: 0 });
+}
+const avgErr = (t: ErrTally) => (t.n ? (t.absErr / t.n).toFixed(2) : '–');
+
+function CountStatsView({ store }: { store: ModeProps['store'] }) {
+  const c = store.count;
+  const rc = sumErr(c.flash, c.rounds.rc, c.play.rc);
+  const tc = sumErr(c.rounds.tc, c.play.tc);
+  const bet = c.play.bet;
+  const speeds = [c.flash.bestSpeed, c.rounds.bestSpeed].filter((x): x is number => x !== null);
+  return (
+    <>
+      <div className="stat-cards">
+        <div className="stat"><div className="big">{speeds.length ? `${Math.min(...speeds).toFixed(1)}s` : '–'}</div><div className="muted">fastest speed with a correct count (s/card)</div></div>
+        <div className="stat"><div className="big">{avgErr(rc)}</div><div className="muted">avg running-count error</div></div>
+      </div>
+      <Bar label="Running count (all)" t={rc} />
+      <div className="muted small sub-bars">
+        Flash {pct(c.flash) ?? '–'}% ({c.flash.n}) · Rounds {pct(c.rounds.rc) ?? '–'}% ({c.rounds.rc.n}) · In play {pct(c.play.rc) ?? '–'}% ({c.play.rc.n})
+        {c.flash.bestSpeed !== null && <> · best flash {c.flash.bestSpeed.toFixed(1)}s</>}
+        {c.rounds.bestSpeed !== null && <> · best rounds {c.rounds.bestSpeed.toFixed(1)}s</>}
+      </div>
+      <Bar label="True count" t={tc} />
+      <div className="muted small sub-bars">Avg TC error {avgErr(tc)} (vs exact TC)</div>
+      <Bar label="Bet sizing vs ramp" t={bet} />
+      <div className="muted small sub-bars">Avg bet error {bet.n ? (bet.absErr / bet.n).toFixed(2) : '–'} units · {store.settings.count.spread} spread</div>
+    </>
   );
 }

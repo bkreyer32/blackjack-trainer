@@ -1,23 +1,63 @@
 import type { HandKind, Rules, Up } from '../engine/types';
 import { DEFAULT_RULES, UPCARDS } from '../engine/types';
 import { cellKey, parseCellKey, type CellRef } from '../engine/decide';
+import type { Spread, TcConvention } from '../count/hilo';
 
 export interface Tally { n: number; correct: number; lastWrong?: boolean }
 export interface ModeStats {
   cells: Record<string, Tally>;
   kinds: Record<HandKind, Tally>;
 }
+export interface CountSettings {
+  /** seconds per card */
+  speed: number;
+  flashCards: number;
+  flashDecks: number; // 0 = use flashCards, else full decks
+  players: number;
+  quizEvery: number;
+  quizTc: boolean;
+  showDecksLeft: boolean;
+  tcConvention: TcConvention;
+  tcTolerance: boolean;
+  spread: Spread;
+  countInPlay: boolean;
+  playQuizEvery: number;
+}
 export interface Settings {
   /** 0..1 share of deals aimed at weak spots in Play mode */
   focus: number;
   drillFilter: 'all' | HandKind;
+  count: CountSettings;
 }
+export interface ErrTally { n: number; correct: number; absErr: number }
+export interface FlashResult { ts: number; cards: number; speed: number; answer: number; actual: number }
+export interface CountStats {
+  flash: ErrTally & { bestSpeed: number | null; history: FlashResult[] };
+  rounds: { rc: ErrTally; tc: ErrTally; bestSpeed: number | null; rounds: number };
+  play: { rc: ErrTally; tc: ErrTally; bet: { n: number; correct: number; absErr: number } };
+}
+export const emptyErr = (): ErrTally => ({ n: 0, correct: 0, absErr: 0 });
+export function recordErr(t: ErrTally, answer: number, actual: number, correct: boolean) {
+  t.n++;
+  if (correct) t.correct++;
+  t.absErr += Math.abs(answer - actual);
+}
+export const DEFAULT_COUNT_SETTINGS: CountSettings = {
+  speed: 1, flashCards: 20, flashDecks: 0, players: 3, quizEvery: 1, quizTc: true, showDecksLeft: true,
+  tcConvention: 'truncate', tcTolerance: false, spread: '1-8', countInPlay: false, playQuizEvery: 5,
+};
+export const freshCountStats = (): CountStats => ({
+  flash: { ...emptyErr(), bestSpeed: null, history: [] },
+  rounds: { rc: emptyErr(), tc: emptyErr(), bestSpeed: null, rounds: 0 },
+  play: { rc: emptyErr(), tc: emptyErr(), bet: { n: 0, correct: 0, absErr: 0 } },
+});
 export interface Store {
   version: 1;
   rules: Rules;
   settings: Settings;
   play: ModeStats & { hands: number; net: number };
   drill: ModeStats;
+  count: CountStats;
 }
 
 const KEY = 'bj-trainer:v1';
@@ -31,9 +71,10 @@ export function freshStore(): Store {
   return {
     version: 1,
     rules: { ...DEFAULT_RULES },
-    settings: { focus: 0.4, drillFilter: 'all' },
+    settings: { focus: 0.4, drillFilter: 'all', count: { ...DEFAULT_COUNT_SETTINGS } },
     play: { ...emptyMode(), hands: 0, net: 0 },
     drill: emptyMode(),
+    count: freshCountStats(),
   };
 }
 
@@ -43,7 +84,17 @@ export function loadStore(): Store {
     if (!raw) return freshStore();
     const s = JSON.parse(raw) as Store;
     const f = freshStore();
-    return { ...f, ...s, rules: { ...f.rules, ...s.rules }, settings: { ...f.settings, ...s.settings } };
+    const cs = s.count ?? f.count;
+    return {
+      ...f, ...s,
+      rules: { ...f.rules, ...s.rules },
+      settings: { ...f.settings, ...s.settings, count: { ...DEFAULT_COUNT_SETTINGS, ...(s.settings?.count ?? {}) } },
+      count: {
+        flash: { ...f.count.flash, ...cs.flash },
+        rounds: { ...f.count.rounds, ...cs.rounds },
+        play: { ...f.count.play, ...cs.play },
+      },
+    };
   } catch {
     return freshStore();
   }

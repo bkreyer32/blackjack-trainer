@@ -20,5 +20,5 @@ export const MODES: ModeDef[] = [
   { id: 'drill', label: 'Drill', icon: '🎯', component: Drill },
   { id: 'play', label: 'Play', icon: '🃏', component: Play },
   { id: 'stats', label: 'Stats', icon: '📊', component: Stats },
-  { id: 'count', label: 'Count', icon: '🔢', component: Count, soon: true },
+  { id: 'count', label: 'Count', icon: '🔢', component: Count },
 ];
