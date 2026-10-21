@@ -10,6 +10,7 @@ export const HELP = {
   surrender: { title: 'Surrender', body: 'Late surrender lets you give up half your bet on your first two cards after the dealer checks for blackjack. Turns on Surrender plays (16 vs 9/10/A, 15 vs 10…) and the Fab 4 index plays.', when: 'Only pick Late if your table offers it.' },
   blackjackPays: { title: 'Blackjack pays', body: '3:2 pays $15 on a $10 blackjack; 6:5 pays $12. It doesn’t change any play, but 6:5 costs you about 1.4% — far more than any rule above.', when: 'Practice with what you’ll see; avoid 6:5 tables for real.' },
   focus: { title: 'Weak-spot deals in Play', body: 'This share of Play hands is dealt on purpose to the chart cells you miss most. The rest are dealt normally from the shoe. Paused automatically while counting so the shoe stays natural.', when: 'Raise it to drill mistakes; Off for realistic play.' },
+  dealSpeed: { title: 'Deal speed in Play', body: 'How fast cards land in Play, one at a time in casino order: Slow 0.9 s, Normal 0.6 s, Fast 0.35 s, Casino 0.2 s between cards. Instant shows them all at once (the old behaviour). Tap the table while cards are landing to skip ahead.', when: 'Slow or Normal while learning to count each card; Casino to train at real speed.' },
   restoreDefaults: { title: 'Restore defaults', body: 'Resets the table rules to 6 decks, H17, double after split, late surrender, 3:2. Your stats are kept.' },
 
   // Play tab controls
@@ -34,7 +35,7 @@ export const HELP = {
 export type HelpId = keyof typeof HELP;
 
 /** Every setting reachable from the Play tab (rules sheet + Count → In Play), for the coverage test. */
-export const PLAY_SETTING_HELP: HelpId[] = ['decks', 'h17', 'das', 'surrender', 'blackjackPays', 'focus', 'restoreDefaults',
+export const PLAY_SETTING_HELP: HelpId[] = ['decks', 'h17', 'das', 'surrender', 'blackjackPays', 'focus', 'dealSpeed', 'restoreDefaults',
   'countInPlay', 'betSizing', 'deviations', 'spread', 'playQuizEvery', 'tcConvention', 'tcTolerance', 'showDecksLeft'];
 /** Controls on the Play screen itself. */
 export const PLAY_CONTROL_HELP: HelpId[] = ['rulesChip', 'scoreline', 'actions', 'deal', 'bet', 'insurance', 'countQuiz'];

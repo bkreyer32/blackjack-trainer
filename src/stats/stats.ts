@@ -1,3 +1,4 @@
+import type { DealSpeed } from '../game/reveal';
 import type { HandKind, Rules, Up } from '../engine/types';
 import { DEFAULT_RULES, UPCARDS } from '../engine/types';
 import { cellKey, parseCellKey, type CellRef } from '../engine/decide';
@@ -32,6 +33,8 @@ export interface Settings {
   focus: number;
   drillFilter: 'all' | HandKind | 'index';
   count: CountSettings;
+  /** Pace of cards landing in Play. */
+  dealSpeed: DealSpeed;
 }
 export interface ErrTally { n: number; correct: number; absErr: number }
 export interface FlashResult { ts: number; cards: number; speed: number; answer: number; actual: number }
@@ -76,7 +79,7 @@ export function freshStore(): Store {
   return {
     version: 1,
     rules: { ...DEFAULT_RULES },
-    settings: { focus: 0.4, drillFilter: 'all', count: { ...DEFAULT_COUNT_SETTINGS } },
+    settings: { focus: 0.4, drillFilter: 'all', dealSpeed: 'normal', count: { ...DEFAULT_COUNT_SETTINGS } },
     play: { ...emptyMode(), hands: 0, net: 0 },
     drill: emptyMode(),
     count: freshCountStats(),

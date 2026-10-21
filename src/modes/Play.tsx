@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { Action } from '../engine/types';
 import { upLabel } from '../engine/types';
 import { handValue, upOf } from '../engine/hand';
@@ -17,6 +17,7 @@ import type { Grader } from '../game/game';
 import { CountFeedback } from './Count';
 import { ACTION_LABEL, type ModeProps } from './common';
 import { HelpBubble } from '../ui/HelpBubble';
+import { DEAL_MS, fullView, revealFrames, viewOf, type View } from '../game/reveal';
 import { preHandStep, afterQuizStep, FLAT_BET } from '../count/flow';
 
 function totalLabel(cards: GameState['dealer']) {
@@ -47,6 +48,16 @@ export function Play({ store, mutate, chart, openGuide }: ModeProps) {
   const devOn = counting && cs.deviations;
   const [pendingIns, setPendingIns] = useState<GameState | null>(null);
   const [insFb, setInsFb] = useState<{ took: boolean; right: boolean; tc: number; net: number } | null>(null);
+  // Card-by-card reveal: the game state is computed at once, the table shows it frame by frame.
+  const dealMs = DEAL_MS[store.settings.dealSpeed ?? 'normal'];
+  const [anim, setAnim] = useState<{ frames: View[]; i: number } | null>(null);
+  const pendingRound = useRef<GameState | null>(null);
+  const animating = !!anim && anim.i < anim.frames.length - 1;
+  const show = (prev: GameState | null, next: GameState) => {
+    setG(next);
+    setAnim({ frames: dealMs > 0 ? revealFrames(prev, next) : [fullView(next)], i: 0 });
+  };
+  const skip = () => { if (anim && animating) setAnim({ ...anim, i: anim.frames.length - 1 }); };
 
   /** Exact true count from every card seen so far (completed rounds + face-up cards of this round). */
   const liveTc = (st: GameState) => {
@@ -73,11 +84,11 @@ export function Play({ store, mutate, chart, openGuide }: ModeProps) {
     if (devOn && upOf(s.dealer[0]) === 11) {
       // Offer insurance before the peek: show the deal with the hole card down and no result yet.
       setPendingIns(s);
-      setG({ ...s, phase: 'player', holeHidden: true, message: undefined, hands: s.hands.map((h) => ({ ...h, result: undefined, done: false })) });
+      show(null, { ...s, phase: 'player', holeHidden: true, message: undefined, hands: s.hands.map((h) => ({ ...h, result: undefined, done: false })) });
       return;
     }
-    setG(s);
-    if (s.phase === 'done') roundOver(s);
+    show(null, s);
+    if (s.phase === 'done') pendingRound.current = s;
   };
 
   const answerInsurance = (took: boolean) => {
@@ -89,8 +100,8 @@ export function Play({ store, mutate, chart, openGuide }: ModeProps) {
     setInsFb({ took, right, tc, net: insNet });
     setPendingIns(null);
     mutate((st) => { recordDev(st.dev.play, 'ins', right); st.play.net += insNet; });
-    setG(s);
-    if (s.phase === 'done') roundOver(s);
+    show(g, s);
+    if (s.phase === 'done') pendingRound.current = s;
   };
 
   /** Called when a round finishes: book stats and add every (now face-up) card to the count. */
@@ -101,6 +112,7 @@ export function Play({ store, mutate, chart, openGuide }: ModeProps) {
   };
 
   const onDeal = () => {
+    if (animating) return;
     if (!counting) return startRound(1);
     setCountFb(null); setBetFb(null); setNotice(null);
     if (shoe.needsShuffle) {
@@ -149,24 +161,36 @@ export function Play({ store, mutate, chart, openGuide }: ModeProps) {
     const s = act(g, a, chart, rules, shoe, grader);
     const fb = s.feedback[s.feedback.length - 1];
     setShowWhy(!fb.correct);
-    setG(s);
+    show(g, s);
     setInsFb(null);
     mutate((st) => {
       record(st.play, fb.cell, fb.correct);
       if (fb.indexId) recordDev(st.dev.play, fb.indexId, fb.correct);
     });
-    if (s.phase === 'done') roundOver(s);
+    if (s.phase === 'done') pendingRound.current = s;
   };
+
+  // Step through frames; book the round (stats + count) only once every card has landed.
+  useEffect(() => {
+    if (!anim) return;
+    if (anim.i < anim.frames.length - 1) {
+      const t = setTimeout(() => setAnim((a) => (a ? { ...a, i: a.i + 1 } : a)), dealMs);
+      return () => clearTimeout(t);
+    }
+    const s = pendingRound.current;
+    if (s) { pendingRound.current = null; roundOver(s); }
+  }, [anim]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const av = availability(g, rules);
   const enabled = (a: Action) =>
-    g.phase === 'player' && !pendingIns &&
+    g.phase === 'player' && !pendingIns && !animating &&
     (a === 'hit' ? av.canHit : a === 'stand' ? true : a === 'double' ? av.canDouble : a === 'split' ? av.canSplit : av.canSurrender);
   const last = g.feedback[g.feedback.length - 1];
   const lastCode = last ? codeAt(chart, last.cell) : null;
   const acc = store.play.kinds;
   const totalN = acc.hard.n + acc.soft.n + acc.pair.n;
   const totalC = acc.hard.correct + acc.soft.correct + acc.pair.correct;
+  const t = anim && animating ? viewOf(g, anim.frames[anim.i]) : g;
   const actions: Action[] = ['hit', 'stand', 'double', 'split', ...(rules.surrender === 'late' ? (['surrender'] as Action[]) : [])];
 
   return (
@@ -177,24 +201,25 @@ export function Play({ store, mutate, chart, openGuide }: ModeProps) {
         <span>Shoe {Math.round((100 * shoe.remaining) / (rules.decks * 52))}%{counting ? ` · ≈${decksLeft}D` : ''}</span>
         <span>Net {store.play.net >= 0 ? '+' : ''}{store.play.net} u<HelpBubble id="scoreline" /></span>
       </div>
-      <div className="table">
+      <div className={`table${animating ? ' dealing' : ''}`} style={{ ['--deal-ms' as string]: `${Math.min(320, Math.round(dealMs * 0.7))}ms` }} onClick={skip}>
         <div className="zone">
           <div className="zone-label">
-            Dealer {g.dealer.length > 0 && (g.holeHidden ? `· ${upLabel(upOf(g.dealer[0]))}` : `· ${totalLabel(g.dealer)}`)}
+            Dealer {t.dealer.length > 0 && (t.holeHidden ? `· ${upLabel(upOf(t.dealer[0]))}` : `· ${totalLabel(t.dealer)}`)}
           </div>
-          {g.dealer.length ? <CardRow cards={g.dealer} hideSecond={g.holeHidden} /> : <div className="card-row placeholder">Tap Deal to start</div>}
+          {t.dealer.length || g.phase !== 'idle' ? <CardRow cards={t.dealer} hideSecond={t.holeHidden} dealer /> : <div className="card-row placeholder">Tap Deal to start</div>}
         </div>
-        <div className={`hands n${g.hands.length}`}>
-          {g.hands.map((h, i) => (
-            <div key={i} className={`zone hand${g.phase === 'player' && i === g.active ? ' active' : ''}`}>
+        <div className={`hands n${t.hands.length}`}>
+          {t.hands.map((h, i) => (
+            <div key={i} className={`zone hand${g.phase === 'player' && !animating && i === g.active ? ' active' : ''}`}>
               <div className="zone-label">
-                {g.hands.length > 1 ? `Hand ${i + 1} · ` : 'You · '}{totalLabel(h.cards)}{h.doubled ? ' · 2×' : ''}
-                {h.result && <span className={`result r-${h.result}`}>{RESULT[h.result]}</span>}
+                {t.hands.length > 1 ? `Hand ${i + 1} · ` : 'You · '}{h.cards.length ? totalLabel(h.cards) : ''}{h.doubled && !animating ? ' · 2×' : ''}
+                {h.result && !animating && <span className={`result r-${h.result}`}>{RESULT[h.result]}</span>}
               </div>
-              <CardRow cards={h.cards} small={g.hands.length > 2} />
+              <CardRow cards={h.cards} small={t.hands.length > 2} />
             </div>
           ))}
         </div>
+        {animating && <div className="skip-hint">tap to skip</div>}
       </div>
 
       <div className="feedback-slot">
@@ -214,7 +239,7 @@ export function Play({ store, mutate, chart, openGuide }: ModeProps) {
             {showWhy && last.reason && <button className="linkbtn" onClick={(e) => { e.stopPropagation(); openGuide(2); }}>How deviations work</button>}
           </div>
         )}
-        {g.phase === 'done' && (
+        {g.phase === 'done' && !animating && (
           <div className="round-msg">
             {g.message ? `${g.message} ` : ''}Round: {g.roundNet > 0 ? '+' : ''}{g.roundNet} u
             {g.feedback.length > 0 && ` · ${g.feedback.filter((f) => f.correct).length}/${g.feedback.length} correct`}
@@ -265,14 +290,14 @@ export function Play({ store, mutate, chart, openGuide }: ModeProps) {
           <div className="pad">
             <div className="bet-label">Dealer shows an ace — insurance?{cs.showDecksLeft ? ` · ≈${decksLeft} decks left` : ''}<HelpBubble id="insurance" /></div>
             <div className="pad-row big">
-              <button className="btn act a-surrender" onClick={() => answerInsurance(false)}>No insurance</button>
-              <button className="btn act a-double" onClick={() => answerInsurance(true)}>Insure</button>
+              <button className="btn act a-surrender" disabled={animating} onClick={() => answerInsurance(false)}>No insurance</button>
+              <button className="btn act a-double" disabled={animating} onClick={() => answerInsurance(true)}>Insure</button>
             </div>
           </div>
         ) : g.phase === 'player' ? (
           <div className="with-help-row"><div className="flex1"><ActionPad actions={actions} enabled={enabled} onAct={onAct} /></div><HelpBubble id="actions" label="Action buttons" /></div>
         ) : (
-          <div className="with-help-row"><button className="btn deal flex1" onClick={onDeal}>{counting && cs.betSizing ? 'Next hand (bet)' : 'Deal'}</button><HelpBubble id="deal" label="Deal" /></div>
+          <div className="with-help-row"><button className="btn deal flex1" disabled={animating} onClick={onDeal}>{counting && cs.betSizing ? 'Next hand (bet)' : 'Deal'}</button><HelpBubble id="deal" label="Deal" /></div>
         )}
       </div>
       )}

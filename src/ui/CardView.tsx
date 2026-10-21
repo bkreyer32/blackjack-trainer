@@ -12,11 +12,12 @@ export function CardView({ card, hidden, small }: { card?: Card; hidden?: boolea
   );
 }
 
-export function CardRow({ cards, hideSecond, small }: { cards: Card[]; hideSecond?: boolean; small?: boolean }) {
+export function CardRow({ cards, hideSecond, small, dealer }: { cards: Card[]; hideSecond?: boolean; small?: boolean; dealer?: boolean }) {
   return (
-    <div className="card-row">
+    <div className={`card-row${dealer ? ' dealer' : ''}`}>
       {cards.map((c, i) => (
-        <CardView key={i} card={c} hidden={hideSecond && i === 1} small={small} />
+        // The hole card remounts when it turns over, so it gets the flip animation.
+        <CardView key={dealer && i === 1 ? `1${hideSecond ? 'd' : 'u'}` : i} card={c} hidden={hideSecond && i === 1} small={small} />
       ))}
     </div>
   );
