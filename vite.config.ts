@@ -3,11 +3,13 @@ import react from '@vitejs/plugin-react';
 import { VitePWA } from 'vite-plugin-pwa';
 
 // base './' keeps the build portable: works at a domain root or a sub-path (e.g. GitHub Pages /blackjack-trainer/).
+const native = process.env.VITE_NATIVE === 'true'; // native (Capacitor) build: no service worker
+
 export default defineConfig({
   base: './',
   plugins: [
     react(),
-    VitePWA({
+    ...(native ? [] : [VitePWA({
       registerType: 'autoUpdate',
       injectRegister: 'auto',
       includeAssets: ['apple-touch-icon.png', 'favicon.png'],
@@ -31,7 +33,7 @@ export default defineConfig({
         globPatterns: ['**/*.{js,css,html,png,svg,ico,webmanifest}'],
         navigateFallback: 'index.html'
       }
-    })
+    })])
   ],
   test: { include: ['tests/**/*.test.ts'] }
 } as any);

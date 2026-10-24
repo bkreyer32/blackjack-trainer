@@ -1,0 +1,46 @@
+name: iOS simulator build (unsigned)
+
+# Verifies the native iOS project compiles. No Apple account, certificates or secrets needed.
+on:
+  push:
+    branches: [main]
+    paths: ['ios/**', 'src/**', 'package*.json', 'capacitor.config.ts', 'app.config.json', 'vite.config.ts', '.github/workflows/ios-simulator-build.yml']
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: macos-15
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm test
+      - name: Build web bundle (native flag) and sync into the iOS project
+        run: |
+          npm run build:native
+          npx cap sync ios
+      - name: Show Xcode
+        run: xcodebuild -version && xcrun simctl list runtimes | head
+      - name: Build for the iOS Simulator (unsigned)
+        run: |
+          set -o pipefail
+          xcodebuild build \
+            -project ios/App/App.xcodeproj \
+            -scheme App \
+            -configuration Debug \
+            -sdk iphonesimulator \
+            -destination 'generic/platform=iOS Simulator' \
+            -derivedDataPath build/DerivedData \
+            -skipPackagePluginValidation \
+            CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" \
+            | tee build/xcodebuild.log | tail -n 40
+      - name: Upload simulator .app
+        uses: actions/upload-artifact@v4
+        with:
+          name: App-simulator
+          path: build/DerivedData/Build/Products/Debug-iphonesimulator/App.app

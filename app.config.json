@@ -1,0 +1,12 @@
+{
+  "_comment": "Single place for app identity. Edit here, then run `npm run apply-app-config` (updates the iOS project) and `npm run build:native`.",
+  "appId": "com.brettkreyer.blackjacktrainer",
+  "appName": "Blackjack Counter",
+  "iapProductId": "com.brettkreyer.blackjacktrainer.unlock",
+  "iapDisplayName": "Unlock Counting & Deviations",
+  "webUrl": "https://bkreyer32.github.io/blackjack-trainer/",
+  "privacyUrl": "https://bkreyer32.github.io/blackjack-trainer/privacy/",
+  "supportUrl": "https://bkreyer32.github.io/blackjack-trainer/support/",
+  "termsUrl": "https://www.apple.com/legal/internet-services/itunes/dev/stdeula/",
+  "supportEmail": "support email TBD"
+}
