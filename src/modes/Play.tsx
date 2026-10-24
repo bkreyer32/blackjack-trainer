@@ -17,6 +17,8 @@ import type { Grader } from '../game/game';
 import { CountFeedback } from './Count';
 import { ACTION_LABEL, type ModeProps } from './common';
 import { HelpBubble } from '../ui/HelpBubble';
+import { DiscardTray } from '../ui/DiscardTray';
+import { discardsAfterRound } from '../game/tray';
 import { DEAL_MS, fullView, revealFrames, viewOf, type View } from '../game/reveal';
 import { preHandStep, afterQuizStep, FLAT_BET } from '../count/flow';
 
@@ -50,6 +52,7 @@ export function Play({ store, mutate, chart, openGuide }: ModeProps) {
   const [insFb, setInsFb] = useState<{ took: boolean; right: boolean; tc: number; net: number } | null>(null);
   // Card-by-card reveal: the game state is computed at once, the table shows it frame by frame.
   const dealMs = DEAL_MS[store.settings.dealSpeed ?? 'normal'];
+  const [discarded, setDiscarded] = useState(0); // cards in the discard tray (completed rounds only)
   const [anim, setAnim] = useState<{ frames: View[]; i: number } | null>(null);
   const pendingRound = useRef<GameState | null>(null);
   const animating = !!anim && anim.i < anim.frames.length - 1;
@@ -77,6 +80,7 @@ export function Play({ store, mutate, chart, openGuide }: ModeProps) {
     if (!counting && Math.random() < store.settings.focus) {
       target = pickWeighted(allCells(), (c) => cellWeight(combinedTally(store, cellKey(c))));
     }
+    if (shoe.needsShuffle) setDiscarded(0); // deal() reshuffles: tray empties
     setTargeted(target);
     setShowWhy(false);
     const s = deal(shoe, rules, target, Math.random, bet);
@@ -107,6 +111,7 @@ export function Play({ store, mutate, chart, openGuide }: ModeProps) {
   /** Called when a round finishes: book stats and add every (now face-up) card to the count. */
   const roundOver = (s: GameState) => {
     rcRef.current += runningCount([...s.dealer, ...s.hands.flatMap((h) => h.cards)]);
+    setDiscarded(discardsAfterRound(shoe.total, shoe.remaining)); // the round's cards go to the tray now
     handsRef.current++;
     mutate((st) => { st.play.hands++; st.play.net += s.roundNet; });
   };
@@ -117,6 +122,7 @@ export function Play({ store, mutate, chart, openGuide }: ModeProps) {
     setCountFb(null); setBetFb(null); setNotice(null);
     if (shoe.needsShuffle) {
       shoe.shuffle();
+      setDiscarded(0);
       rcRef.current = 0;
       handsRef.current = 0;
       setNotice('Shuffle! New shoe — count resets to 0.');
@@ -198,7 +204,10 @@ export function Play({ store, mutate, chart, openGuide }: ModeProps) {
       {pre === 'rc' || pre === 'tc' ? <div className="flex1" /> : (<>
       <div className="scoreline with-help">
         <span>Accuracy {totalN ? Math.round((100 * totalC) / totalN) : '–'}%</span>
-        <span>Shoe {Math.round((100 * shoe.remaining) / (rules.decks * 52))}%{counting ? ` · ≈${decksLeft}D` : ''}</span>
+        <span className="tray-wrap">
+          <DiscardTray discarded={discarded} total={shoe.total} cutRemaining={shoe.cutRemaining} />
+          {counting && cs.showDecksLeft && <span className="tray-d">≈{decksLeft}D</span>}
+        </span>
         <span>Net {store.play.net >= 0 ? '+' : ''}{store.play.net} u<HelpBubble id="scoreline" /></span>
       </div>
       <div className={`table${animating ? ' dealing' : ''}`} style={{ ['--deal-ms' as string]: `${Math.min(320, Math.round(dealMs * 0.7))}ms` }} onClick={skip}>

@@ -24,6 +24,14 @@ export class Shoe {
   get needsShuffle() {
     return this.cards.length <= this.cutIndex;
   }
+  /** Total cards in a full shoe. */
+  get total() {
+    return this.decks * 52;
+  }
+  /** Cards left in the shoe when the cut card comes out (reshuffle point). */
+  get cutRemaining() {
+    return this.cutIndex;
+  }
   get remaining() {
     return this.cards.length;
   }
