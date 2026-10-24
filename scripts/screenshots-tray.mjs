@@ -11,7 +11,7 @@ const load = async (settings) => { await page.goto(URL + '#play', { waitUntil: '
 await load({ focus: 0, dealSpeed: 'instant' });
 await sleep(300);
 console.log('start', await tray());
-await page.screenshot({ path: 'screenshots/45-tray-start-of-shoe.png' });
+await page.screenshot({ path: 'screenshots/50-tray-empty.png' });
 // mid-hand: tray must not change until the round ends
 await click('Deal'); await sleep(200);
 console.log('mid-hand (dealt, not finished)', await tray());
@@ -20,8 +20,8 @@ for (let i = 0; i < 400 && !shots.near; i++) {
   if (!(await click('Stand'))) { await click('Deal'); }
   await sleep(40);
   const t = await tray();
-  if (!shots.mid && t.pct >= 45 && t.level === 'ok') { await sleep(700); await page.screenshot({ path: 'screenshots/46-tray-mid-shoe.png' }); shots.mid = true; console.log('mid', await tray()); }
-  if (!shots.near && t.level === 'near') { await sleep(700); await page.screenshot({ path: 'screenshots/47-tray-near-cut-card.png' }); shots.near = true; console.log('near', await tray()); }
+  if (!shots.mid && t.pct >= 45 && t.level === 'ok') { await sleep(700); await page.screenshot({ path: 'screenshots/51-tray-mid-shoe.png' }); shots.mid = true; console.log('mid', await tray()); }
+  if (!shots.near && t.level === 'near') { await sleep(700); await page.screenshot({ path: 'screenshots/52-tray-near-cut-card.png' }); shots.near = true; console.log('near', await tray()); }
 }
 // run past the cut: next Deal reshuffles and empties tray
 let before; for (let i = 0; i < 80; i++) { before = await tray(); if (!(await click('Stand'))) await click('Deal'); await sleep(30); const a = await tray(); if (a.d < before.d) { console.log('reshuffle: tray', before.d, '->', a.d); break; } }
@@ -29,10 +29,10 @@ let before; for (let i = 0; i < 80; i++) { before = await tray(); if (!(await cl
 await load({ focus: 0, dealSpeed: 'instant', count: { countInPlay: true, betSizing: false, showDecksLeft: true, playQuizEvery: 50 } });
 await click('Deal'); await sleep(200); await click('No insurance'); await click('Stand'); await sleep(200);
 console.log('count+≈D text:', await page.evaluate(() => document.querySelector('.tray-d')?.textContent));
-await page.screenshot({ path: 'screenshots/48-tray-with-decks-left.png' });
+await page.screenshot({ path: 'screenshots/53-tray-with-decks-left.png' });
 await load({ focus: 0, dealSpeed: 'instant', count: { countInPlay: true, betSizing: false, showDecksLeft: false, playQuizEvery: 50 } });
 console.log('hidden ≈D:', await page.evaluate(() => document.querySelector('.tray-d')?.textContent ?? 'none'));
 console.log('aria', await page.evaluate(() => document.querySelector('.tray').getAttribute('aria-label')));
 await page.evaluate(() => document.querySelector('[data-help="scoreline"]').click()); await sleep(200);
-await page.screenshot({ path: 'screenshots/49-tray-help.png' });
+await page.screenshot({ path: 'screenshots/54-tray-help.png' });
 console.log('errors', errors); await browser.close();

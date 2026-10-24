@@ -298,19 +298,12 @@ h3 { font-size: 14px; text-transform: uppercase; letter-spacing: .05em; color: v
 }
 
 /* ---- discard tray ---- */
-.tray-wrap { display: inline-flex; align-items: center; gap: 6px; }
-.tray-d { font-size: 12.5px; color: var(--muted); font-variant-numeric: tabular-nums; }
-.tray { width: 92px; height: 39px; display: block; overflow: visible; }
-.tray-glass { fill: #9fc2d81a; }
-.tray-frame { fill: none; stroke: #9db4c8; stroke-width: 1.6; stroke-linejoin: round; stroke-linecap: round; opacity: .85; }
-.tray-foot { fill: #4b5a69; }
-.tray-stack { transition: transform .6s cubic-bezier(.3,.7,.3,1); }
-.stack-body { fill: #cfd8e3; }
-.stack-layer { stroke: #6f8296; stroke-width: .55; opacity: .75; }
-.stack-top { stroke: #ffffff; stroke-width: 1; opacity: .9; }
-.cut-line { stroke: #ff5d5d; stroke-width: 2; stroke-linecap: round; }
-.tray-near .stack-body { fill: #f0c36a; }
-.tray-near .stack-layer { stroke: #9a6d12; }
-.tray-cut .stack-body { fill: #ee8a7a; }
-.tray-cut .stack-layer { stroke: #8f2f22; }
-@media (prefers-reduced-motion: reduce) { .tray-stack { transition: none; } }
+.tray-dock { position: absolute; top: 4px; right: 6px; z-index: 2; pointer-events: none; display: flex; flex-direction: column; align-items: center; }
+.tray-dock + .zone { padding-right: 126px; }
+.tray-d { font-size: 12.5px; color: #cfe5d8; font-variant-numeric: tabular-nums; margin-top: -4px; font-weight: 600; }
+.tray { width: 122px; height: 86px; display: block; overflow: visible; }
+.tray-rim .rim-main { stroke: #eafaff; stroke-opacity: .8; }
+.tray-rim .rim-inner { stroke: #ffffff; stroke-opacity: .35; }
+.tray-rim .rim-back { stroke: #cfeaf2; stroke-opacity: .5; }
+.tray-near .tray-rim .rim-main { stroke: #ffd27a; stroke-opacity: .95; }
+.tray-cut .tray-rim .rim-main { stroke: #ff8f84; stroke-opacity: 1; }

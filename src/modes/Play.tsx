@@ -204,13 +204,13 @@ export function Play({ store, mutate, chart, openGuide }: ModeProps) {
       {pre === 'rc' || pre === 'tc' ? <div className="flex1" /> : (<>
       <div className="scoreline with-help">
         <span>Accuracy {totalN ? Math.round((100 * totalC) / totalN) : '–'}%</span>
-        <span className="tray-wrap">
-          <DiscardTray discarded={discarded} total={shoe.total} cutRemaining={shoe.cutRemaining} />
-          {counting && cs.showDecksLeft && <span className="tray-d">≈{decksLeft}D</span>}
-        </span>
         <span>Net {store.play.net >= 0 ? '+' : ''}{store.play.net} u<HelpBubble id="scoreline" /></span>
       </div>
       <div className={`table${animating ? ' dealing' : ''}`} style={{ ['--deal-ms' as string]: `${Math.min(320, Math.round(dealMs * 0.7))}ms` }} onClick={skip}>
+        <div className="tray-dock">
+          <DiscardTray discarded={discarded} total={shoe.total} cutRemaining={shoe.cutRemaining} />
+          {counting && cs.showDecksLeft && <span className="tray-d">≈{decksLeft}D</span>}
+        </div>
         <div className="zone">
           <div className="zone-label">
             Dealer {t.dealer.length > 0 && (t.holeHidden ? `· ${upLabel(upOf(t.dealer[0]))}` : `· ${totalLabel(t.dealer)}`)}
