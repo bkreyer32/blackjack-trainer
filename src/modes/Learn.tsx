@@ -9,11 +9,14 @@ import { combinedTally, pct } from '../stats/stats';
 import type { ModeProps } from './common';
 import { activeIndexPlays, chartCodeAt, describeIndex, playName, fmtTc, ACT_VERB, type IndexPlay } from '../engine/deviations';
 import { devTally } from '../stats/stats';
+import { useEntitlement, openPaywall } from '../entitlements';
+import { Lock } from '../ui/Paywall';
 
 type LearnView = HandKind | 'index';
 
 export function Learn(props: ModeProps) {
   const { store, chart, openGuide } = props;
+  const { pro } = useEntitlement();
   const [kind, setKind] = useState<LearnView>('hard');
   const [tc, setTc] = useState<number | null>(null);
   const [sel, setSel] = useState<{ row: number; up: Up } | null>(null);
@@ -43,7 +46,7 @@ export function Learn(props: ModeProps) {
       </div>
       {kind === 'index' ? <IndexList {...props} /> : <>
       <div className="tc-bar">
-        <button className={`tc-toggle${tc !== null ? ' on' : ''}`} onClick={() => setTc(tc === null ? 0 : null)}>{tc === null ? 'Count: off' : `TC ${fmtTc(tc)}`}</button>
+        <button className={`tc-toggle${tc !== null ? ' on' : ''}`} onClick={() => { if (!pro) { openPaywall('tcOverlay'); return; } setTc(tc === null ? 0 : null); }}>{tc === null ? 'Count: off' : `TC ${fmtTc(tc)}`}<Lock show={!pro} /></button>
         <input className="slider" type="range" min={-6} max={6} step={1} value={tc ?? 0} disabled={tc === null} onChange={(e) => setTc(Number(e.target.value))} aria-label="true count" />
       </div>
       <p className="hint">{tc === null

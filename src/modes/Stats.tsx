@@ -2,7 +2,12 @@ import type { HandKind } from '../engine/types';
 import { upLabel } from '../engine/types';
 import { CODE_NAME, rowLabel } from '../engine/explain';
 import { codeAt } from '../engine/decide';
-import { pct, weakSpots, freshCountStats, devTally, type Tally, type ErrTally } from '../stats/stats';
+import { useState } from 'react';
+import { pct, weakSpots, freshBucket, devTally, statsView, savedSigs, sigLabel, rulesSig, rulesFromSig, type Tally, type ErrTally } from '../stats/stats';
+import { chartFor } from '../engine/strategy';
+import { useEntitlement, openPaywall } from '../entitlements';
+import { FEATURE_COPY } from '../entitlements/gating';
+import { Lock } from '../ui/Paywall';
 import { activeIndexPlays, playName, fmtTc } from '../engine/deviations';
 import type { ModeProps } from './common';
 
@@ -18,12 +23,28 @@ function Bar({ label, t }: { label: string; t: Tally }) {
 
 const KIND_LABEL: Record<HandKind, string> = { hard: 'Hard totals', soft: 'Soft totals', pair: 'Pairs' };
 
-export function Stats({ store, mutate, chart }: ModeProps) {
+export function Stats({ store: live, mutate, chart: liveChart }: ModeProps) {
+  const { pro } = useEntitlement();
+  const curSig = rulesSig(live.rules);
+  const [sel, setSel] = useState<'all' | string>(curSig);
+  const sigs = savedSigs(live);
+  const scope = sel === 'all' || sigs.includes(sel) ? sel : curSig;
+  const store = statsView(live, scope);
+  const chart = scope === 'all' || scope === curSig ? liveChart : chartFor(rulesFromSig(scope));
   const sum = (k: HandKind): Tally => ({ n: store.play.kinds[k].n + store.drill.kinds[k].n, correct: store.play.kinds[k].correct + store.drill.kinds[k].correct });
   const all = (['hard', 'soft', 'pair'] as HandKind[]).reduce((a, k) => ({ n: a.n + sum(k).n, correct: a.correct + sum(k).correct }), { n: 0, correct: 0 });
   const weak = weakSpots(store, 1).slice(0, 12);
   return (
     <div className="screen scroll">
+      <div className="scope" role="group" aria-label="Show stats for">
+        <button className={scope === 'all' ? 'on' : ''} aria-pressed={scope === 'all'} onClick={() => setSel('all')}>All rule sets</button>
+        {sigs.map((g) => (
+          <button key={g} className={scope === g ? 'on' : ''} aria-pressed={scope === g} onClick={() => setSel(g)}>
+            {g === curSig ? <><b>This table</b> · {sigLabel(g)}</> : sigLabel(g)}
+          </button>
+        ))}
+      </div>
+      {scope !== 'all' && scope !== curSig && <p className="muted small">Stats from another rule set. Switch rules (top right) to practise it.</p>}
       <div className="stat-cards">
         <div className="stat"><div className="big">{pct(all) ?? '–'}{all.n ? '%' : ''}</div><div className="muted">overall accuracy</div></div>
         <div className="stat"><div className="big">{all.n}</div><div className="muted">decisions</div></div>
@@ -50,10 +71,20 @@ export function Stats({ store, mutate, chart }: ModeProps) {
         </div>
       )}
       <h3>Deviations (index plays)</h3>
-      <DevStatsView store={store} chart={chart} />
+      {pro ? <DevStatsView store={store} chart={chart} /> : <LockedStats feature="countStats" />}
       <h3>Card counting (Hi-Lo)</h3>
-      <CountStatsView store={store} />
-      <button className="btn wide ghost danger" onClick={() => { if (confirm('Reset all stats on this device?')) mutate((s) => { const f = { cells: {}, kinds: { hard: { n: 0, correct: 0 }, soft: { n: 0, correct: 0 }, pair: { n: 0, correct: 0 } } }; s.play = { ...f, hands: 0, net: 0 }; s.drill = structuredClone(f); s.count = freshCountStats(); s.dev = { drill: {}, play: {} }; }); }}>Reset stats</button>
+      {pro ? <CountStatsView store={store} /> : <LockedStats feature="countStats" />}
+      <button className="btn wide ghost danger" onClick={() => {
+        const what = scope === 'all' ? 'ALL stats for every rule set' : `the stats for ${sigLabel(scope)}`;
+        if (!confirm(`Reset ${what} on this device?`)) return;
+        mutate((s) => {
+          const cur = rulesSig(s.rules);
+          if (scope === 'all') { s.buckets = {}; Object.assign(s, freshBucket()); }
+          else if (scope === cur) Object.assign(s, freshBucket());
+          else delete s.buckets[scope];
+        });
+        setSel(curSig);
+      }}>{scope === 'all' ? 'Reset all stats' : 'Reset stats for this rule set'}</button>
     </div>
   );
 }
@@ -111,5 +142,15 @@ function DevStatsView({ store, chart }: { store: ModeProps['store']; chart: Mode
         })}
       </div>
     </>
+  );
+}
+
+function LockedStats({ feature }: { feature: 'countStats' }) {
+  const f = FEATURE_COPY[feature];
+  return (
+    <button className="locked-card" onClick={() => openPaywall(feature)}>
+      <Lock /> <b>{f.title}</b>
+      <span className="muted small">{f.blurb} Tap to unlock.</span>
+    </button>
   );
 }

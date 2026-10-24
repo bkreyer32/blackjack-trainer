@@ -17,10 +17,16 @@ import type { Grader } from '../game/game';
 import { CountFeedback } from './Count';
 import { ACTION_LABEL, type ModeProps } from './common';
 import { HelpBubble } from '../ui/HelpBubble';
+import { hapticResult } from '../platform/haptics';
+import { useEntitlement } from '../entitlements';
+import { effectiveCountSettings } from '../entitlements/gating';
 import { DiscardTray } from '../ui/DiscardTray';
 import { discardsAfterRound } from '../game/tray';
 import { DEAL_MS, fullView, revealFrames, viewOf, type View } from '../game/reveal';
 import { preHandStep, afterQuizStep, FLAT_BET } from '../count/flow';
+import { emptyShoeStats, recordShoeDecision, addPair, summarizeShoe, type ShoeSummary } from '../game/shoeSummary';
+import { HandReview } from '../ui/HandReview';
+import { ShoeSummarySheet } from '../ui/ShoeSummarySheet';
 
 function totalLabel(cards: GameState['dealer']) {
   const v = handValue(cards);
@@ -37,7 +43,8 @@ export function Play({ store, mutate, chart, openGuide }: ModeProps) {
   const [g, setG] = useState<GameState>(initialGame);
   const [targeted, setTargeted] = useState<CellRef | null>(null);
   const [showWhy, setShowWhy] = useState(false);
-  const cs = store.settings.count;
+  const { pro } = useEntitlement();
+  const cs = effectiveCountSettings(store.settings.count, pro); // free users never count in Play
   const counting = cs.countInPlay;
   const rcRef = useRef(0); // running count of every card seen from this shoe (completed rounds)
   const handsRef = useRef(0);
@@ -52,6 +59,10 @@ export function Play({ store, mutate, chart, openGuide }: ModeProps) {
   const [insFb, setInsFb] = useState<{ took: boolean; right: boolean; tc: number; net: number } | null>(null);
   // Card-by-card reveal: the game state is computed at once, the table shows it frame by frame.
   const dealMs = DEAL_MS[store.settings.dealSpeed ?? 'normal'];
+  const shoeStats = useRef(emptyShoeStats()); // this shoe only: feeds the after-shoe summary
+  const [summary, setSummary] = useState<ShoeSummary | null>(null);
+  const [lastRound, setLastRound] = useState<GameState | null>(null);
+  const [reviewOpen, setReviewOpen] = useState(false);
   const [discarded, setDiscarded] = useState(0); // cards in the discard tray (completed rounds only)
   const [anim, setAnim] = useState<{ frames: View[]; i: number } | null>(null);
   const pendingRound = useRef<GameState | null>(null);
@@ -101,6 +112,8 @@ export function Play({ store, mutate, chart, openGuide }: ModeProps) {
     const right = took === insuranceCorrect(tc);
     const dealerBJ = s.dealer.length === 2 && handValue(s.dealer).total === 21;
     const insNet = took ? (dealerBJ ? s.hands[0].bet : -s.hands[0].bet / 2) : 0;
+    hapticResult(right);
+    addPair(shoeStats.current.dev, right);
     setInsFb({ took, right, tc, net: insNet });
     setPendingIns(null);
     mutate((st) => { recordDev(st.dev.play, 'ins', right); st.play.net += insNet; });
@@ -113,11 +126,18 @@ export function Play({ store, mutate, chart, openGuide }: ModeProps) {
     rcRef.current += runningCount([...s.dealer, ...s.hands.flatMap((h) => h.cards)]);
     setDiscarded(discardsAfterRound(shoe.total, shoe.remaining)); // the round's cards go to the tray now
     handsRef.current++;
+    shoeStats.current.hands++;
+    setLastRound(s);
     mutate((st) => { st.play.hands++; st.play.net += s.roundNet; });
   };
 
   const onDeal = () => {
     if (animating) return;
+    if (shoe.needsShuffle && shoeStats.current.hands > 0) { setSummary(summarizeShoe(shoeStats.current)); return; } // summary first, then reshuffle
+    dealNext();
+  };
+  const continueAfterSummary = () => { setSummary(null); shoeStats.current = emptyShoeStats(); dealNext(); };
+  const dealNext = () => {
     if (!counting) return startRound(1);
     setCountFb(null); setBetFb(null); setNotice(null);
     if (shoe.needsShuffle) {
@@ -142,16 +162,21 @@ export function Play({ store, mutate, chart, openGuide }: ModeProps) {
   };
   const finishQuiz = (rcA: number, tcA: number | null) => {
     const rc = rcRef.current;
+    addPair(shoeStats.current.rc, rcA === rc);
+    if (tcA !== null) addPair(shoeStats.current.tc, gradeTrueCount(tcA, rc, decksLeft, cs.tcConvention, cs.tcTolerance));
     mutate((st) => {
       recordErr(st.count.play.rc, rcA, rc, rcA === rc);
       if (tcA !== null) recordErr(st.count.play.tc, tcA, exactTrueCount(rc, decksLeft), gradeTrueCount(tcA, rc, decksLeft, cs.tcConvention, cs.tcTolerance));
     });
+    hapticResult(rcA === rc && (tcA === null || gradeTrueCount(tcA, rc, decksLeft, cs.tcConvention, cs.tcTolerance)));
     setCountFb({ rc, rcAns: rcA, tcAns: tcA, decks: decksLeft, cardsLeft: shoe.remaining });
     setPre(afterQuizStep(cs.betSizing));
   };
   const chooseBet = (bet: number) => {
     const tc = trueCount(rcRef.current, decksLeft, cs.tcConvention);
     const want = rampBet(tc, cs.spread);
+    hapticResult(bet === want);
+    addPair(shoeStats.current.bet, bet === want);
     setBetFb({ bet, want, tc });
     mutate((st) => {
       const b = st.count.play.bet;
@@ -166,6 +191,8 @@ export function Play({ store, mutate, chart, openGuide }: ModeProps) {
   const onAct = (a: Action) => {
     const s = act(g, a, chart, rules, shoe, grader);
     const fb = s.feedback[s.feedback.length - 1];
+    hapticResult(fb.correct);
+    recordShoeDecision(shoeStats.current, fb.cell, fb.correct, !!fb.indexId);
     setShowWhy(!fb.correct);
     show(g, s);
     setInsFb(null);
@@ -204,6 +231,7 @@ export function Play({ store, mutate, chart, openGuide }: ModeProps) {
       {pre === 'rc' || pre === 'tc' ? <div className="flex1" /> : (<>
       <div className="scoreline with-help">
         <span>Accuracy {totalN ? Math.round((100 * totalC) / totalN) : '–'}%</span>
+        <button className="linkbtn lasthand" disabled={!lastRound} onClick={() => setReviewOpen(true)} aria-label="Review last hand">↺ Last hand</button>
         <span>Net {store.play.net >= 0 ? '+' : ''}{store.play.net} u<HelpBubble id="scoreline" /></span>
       </div>
       <div className={`table${animating ? ' dealing' : ''}`} style={{ ['--deal-ms' as string]: `${Math.min(320, Math.round(dealMs * 0.7))}ms` }} onClick={skip}>
@@ -310,6 +338,8 @@ export function Play({ store, mutate, chart, openGuide }: ModeProps) {
         )}
       </div>
       )}
+      <HandReview round={lastRound} chart={chart} open={reviewOpen} onClose={() => setReviewOpen(false)} />
+      <ShoeSummarySheet summary={summary} onContinue={continueAfterSummary} />
     </div>
   );
 }

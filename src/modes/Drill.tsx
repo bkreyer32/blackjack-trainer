@@ -8,6 +8,10 @@ import { CODE_NAME, explain, rowLabel } from '../engine/explain';
 import { cardsForCell } from '../game/game';
 import { allCells, cellWeight, combinedTally, pickWeighted, record } from '../stats/stats';
 import { ACTION_LABEL, type ModeProps } from './common';
+import { hapticResult } from '../platform/haptics';
+import { useEntitlement, openPaywall } from '../entitlements';
+import { effectiveDrillFilter } from '../entitlements/gating';
+import { Lock } from '../ui/Paywall';
 
 const SUITS: Suit[] = ['♠', '♥', '♦', '♣'];
 function toCard(v: number): Card {
@@ -26,15 +30,19 @@ function makeQ(props: ModeProps, prev?: CellRef): Q {
 }
 
 export function Drill(props: ModeProps) {
-  return props.store.settings.drillFilter === 'index' ? <DevDrill {...props} /> : <BasicDrill {...props} />;
+  const { pro } = useEntitlement();
+  return effectiveDrillFilter(props.store.settings.drillFilter, pro) === 'index' ? <DevDrill {...props} /> : <BasicDrill {...props} />;
 }
 
 export function DrillFilter({ store, mutate, onChange }: ModeProps & { onChange?: () => void }) {
+  const { pro } = useEntitlement();
+  const cur = effectiveDrillFilter(store.settings.drillFilter, pro);
   return (
     <div className="seg small">
       {(['all', 'hard', 'soft', 'pair', 'index'] as const).map((f) => (
-        <button key={f} className={store.settings.drillFilter === f ? 'on' : ''} onClick={() => { mutate((s) => { s.settings.drillFilter = f; }); onChange?.(); }}>
-          {f === 'all' ? 'All' : f === 'pair' ? 'Pairs' : f === 'index' ? 'Index' : f[0].toUpperCase() + f.slice(1)}
+        <button key={f} className={cur === f ? 'on' : ''} aria-pressed={cur === f}
+          onClick={() => { if (f === 'index' && !pro) { openPaywall('deviationDrill'); return; } mutate((s) => { s.settings.drillFilter = f; }); onChange?.(); }}>
+          {f === 'all' ? 'All' : f === 'pair' ? 'Pairs' : f === 'index' ? 'Index' : f[0].toUpperCase() + f.slice(1)}{f === 'index' && <Lock show={!pro} />}
         </button>
       ))}
     </div>
@@ -56,6 +64,7 @@ function BasicDrill(props: ModeProps) {
   const choose = (a: Action) => {
     if (answer) return;
     const ok = a === best;
+    hapticResult(ok);
     setAnswer(a);
     setStreak(ok ? streak + 1 : 0);
     setSession({ n: session.n + 1, c: session.c + (ok ? 1 : 0) });

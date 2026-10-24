@@ -1,3 +1,4 @@
+import { hapticResult } from '../platform/haptics';
 import { useMemo, useState } from 'react';
 import type { Action, Card, Rank, Suit, Up } from '../engine/types';
 import { upLabel } from '../engine/types';
@@ -69,6 +70,7 @@ export function DevDrill(props: ModeProps) {
   const choose = (a: string) => {
     if (answer) return;
     const ok = a === want;
+    hapticResult(ok);
     setAnswer(a);
     setSession({ n: session.n + 1, c: session.c + (ok ? 1 : 0) });
     mutate((s) => recordDev(s.dev.drill, q.play.id, ok));

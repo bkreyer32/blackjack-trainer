@@ -53,6 +53,11 @@ export interface Chart {
 export function upLabel(u: Up): string {
   return u === 11 ? 'A' : u === 10 ? '10' : String(u);
 }
+/** Compact label for the header chip, e.g. "6D H17 DAS LS". */
+export function rulesShort(r: Rules): string {
+  return `${r.decks}D ${r.h17 ? 'H17' : 'S17'} ${r.das ? 'DAS' : 'noDAS'} ${r.surrender === 'late' ? 'LS' : 'noLS'}${r.blackjackPays === '6:5' ? ' 6:5' : ''}`;
+}
+
 export function rulesLabel(r: Rules): string {
   const d = r.decks === 1 ? '1 deck' : `${r.decks} decks`;
   return `${d} · ${r.h17 ? 'H17' : 'S17'} · ${r.das ? 'DAS' : 'no DAS'} · ${r.surrender === 'late' ? 'LS' : 'no surr.'} · BJ ${r.blackjackPays}`;

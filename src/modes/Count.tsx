@@ -9,18 +9,25 @@ import { recordErr, type CountSettings } from '../stats/stats';
 import type { ModeProps } from './common';
 import { HelpBubble } from '../ui/HelpBubble';
 import type { HelpId } from '../ui/help';
+import { hapticResult } from '../platform/haptics';
+import { useEntitlement, openPaywall } from '../entitlements';
+import { clampFlash, FREE_FLASH_CARDS } from '../entitlements/gating';
+import { Lock } from '../ui/Paywall';
 
 type Sub = 'flash' | 'rounds' | 'play';
 
 export function Count(props: ModeProps) {
-  const [sub, setSub] = useState<Sub>(() => (sessionStorage.getItem('count-sub') as Sub) || 'flash');
+  const { pro } = useEntitlement();
+  const [saved, setSub] = useState<Sub>(() => (sessionStorage.getItem('count-sub') as Sub) || 'flash');
+  const sub: Sub = pro ? saved : 'flash'; // Rounds and In Play are part of the unlock
   useEffect(() => { sessionStorage.setItem('count-sub', sub); }, [sub]);
   return (
     <div className="screen play">
       <div className="seg">
         {(['flash', 'rounds', 'play'] as Sub[]).map((s) => (
-          <button key={s} className={sub === s ? 'on' : ''} onClick={() => setSub(s)}>
-            {s === 'flash' ? 'Flash' : s === 'rounds' ? 'Rounds' : 'In Play'}
+          <button key={s} className={sub === s ? 'on' : ''} aria-pressed={sub === s}
+            onClick={() => { if (s !== 'flash' && !pro) { openPaywall(s === 'rounds' ? 'rounds' : 'countInPlay'); return; } setSub(s); }}>
+            {s === 'flash' ? 'Flash' : s === 'rounds' ? 'Rounds' : 'In Play'}<Lock show={s !== 'flash' && !pro} />
           </button>
         ))}
       </div>
@@ -68,7 +75,10 @@ function makeFlashCards(n: number, decks: number): Card[] {
 /* ---------------- Flash drill ---------------- */
 function Flash(props: ModeProps) {
   const { store, mutate } = props;
-  const [cs, set] = useCountSettings(props);
+  const { pro } = useEntitlement();
+  const [cs0, set] = useCountSettings(props);
+  const fl = clampFlash(cs0.flashCards, cs0.flashDecks, pro);
+  const cs = { ...cs0, flashCards: fl.cards, flashDecks: fl.decks }; // free: at most 20 cards, no full decks
   const [phase, setPhase] = useState<'setup' | 'run' | 'answer' | 'result'>('setup');
   const [cards, setCards] = useState<Card[]>([]);
   const [i, setI] = useState(0);
@@ -96,6 +106,7 @@ function Flash(props: ModeProps) {
   const submit = (n: number) => {
     const actual = runningCount(cards);
     const ok = n === actual;
+    hapticResult(ok);
     setLast({ answer: n, actual });
     setPhase('result');
     mutate((s) => {
@@ -141,8 +152,13 @@ function Flash(props: ModeProps) {
       {phase === 'setup' && <p className="hint">Hi-Lo: 2–6 = <b>+1</b>, 7–9 = <b>0</b>, 10–A = <b>−1</b>. Cards flash one at a time; keep the running count, then enter it.</p>}
       <SpeedSlider value={cs.speed} onChange={(v) => set({ speed: v })} />
       <Seg label="Cards" value={cs.flashDecks ? `d${cs.flashDecks}` : `n${cs.flashCards}`}
-        options={[['n10', '10'], ['n20', '20'], ['n30', '30'], ['d1', '1 deck'], ['d2', '2 decks']]}
-        onChange={(v) => (v.startsWith('d') ? set({ flashDecks: Number(v.slice(1)) }) : set({ flashDecks: 0, flashCards: Number(v.slice(1)) }))} />
+        options={[['n10', '10'], ['n20', '20'], ['n30', pro ? '30' : '30 🔒'], ['d1', pro ? '1 deck' : '1 deck 🔒'], ['d2', pro ? '2 decks' : '2 decks 🔒']]}
+        onChange={(v) => {
+          const n = v.startsWith('d') ? 0 : Number(v.slice(1));
+          if (!pro && (v.startsWith('d') || n > FREE_FLASH_CARDS)) { openPaywall('flashUnlimited'); return; }
+          if (v.startsWith('d')) set({ flashDecks: Number(v.slice(1)) }); else set({ flashDecks: 0, flashCards: n });
+        }} />
+      {!pro && <p className="muted small">Free: Flash runs up to {FREE_FLASH_CARDS} cards. Unlock for full decks, Rounds and counting in Play.</p>}
       {cs.flashDecks > 0 && <p className="muted small">A full deck always counts to 0 — a good self-check.</p>}
       {hist.length > 0 && (
         <>
@@ -241,6 +257,7 @@ function Rounds(props: ModeProps) {
     const rc = rcRef.current;
     const ok = rcA === rc;
     const tcOk = tcA === null ? null : gradeTrueCount(tcA, rc, decks, cs.tcConvention, cs.tcTolerance);
+    hapticResult(ok && (tcOk ?? true));
     mutate((s) => {
       recordErr(s.count.rounds.rc, rcA, rc, ok);
       if (tcA !== null) recordErr(s.count.rounds.tc, tcA, exactTrueCount(rc, decks), !!tcOk);

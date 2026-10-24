@@ -11,6 +11,7 @@ export const HELP = {
   blackjackPays: { title: 'Blackjack pays', body: '3:2 pays $15 on a $10 blackjack; 6:5 pays $12. It doesn’t change any play, but 6:5 costs you about 1.4% — far more than any rule above.', when: 'Practice with what you’ll see; avoid 6:5 tables for real.' },
   focus: { title: 'Weak-spot deals in Play', body: 'This share of Play hands is dealt on purpose to the chart cells you miss most. The rest are dealt normally from the shoe. Paused automatically while counting so the shoe stays natural.', when: 'Raise it to drill mistakes; Off for realistic play.' },
   dealSpeed: { title: 'Deal speed in Play', body: 'How fast cards land in Play, one at a time in casino order: Slow 0.9 s, Normal 0.6 s, Fast 0.35 s, Casino 0.2 s between cards. Instant shows them all at once (the old behaviour). Tap the table while cards are landing to skip ahead.', when: 'Slow or Normal while learning to count each card; Casino to train at real speed.' },
+  haptics: { title: 'Haptics', body: 'A short tap when you press buttons and a different buzz for right and wrong answers, on iPhone. Has no effect on the web version.', when: 'Turn off if you prefer silence and stillness.' },
   restoreDefaults: { title: 'Restore defaults', body: 'Resets the table rules to 6 decks, H17, double after split, late surrender, 3:2. Your stats are kept.' },
 
   // Play tab controls
