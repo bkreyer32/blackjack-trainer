@@ -39,7 +39,7 @@ export function Learn(props: ModeProps) {
     <div className="screen">
       <div className="seg">
         {(['hard', 'soft', 'pair', 'index'] as LearnView[]).map((k) => (
-          <button key={k} className={kind === k ? 'on' : ''} onClick={() => { setKind(k); setSel(null); }}>
+          <button key={k} className={kind === k ? 'on' : ''} aria-pressed={kind === k} onClick={() => { setKind(k); setSel(null); }}>
             {k === 'hard' ? 'Hard' : k === 'soft' ? 'Soft' : k === 'pair' ? 'Pairs' : 'Index'}
           </button>
         ))}

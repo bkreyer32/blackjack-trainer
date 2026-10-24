@@ -1,4 +1,4 @@
-# Blackjack Trainer (v1)
+# Blackjack Trainer
 
 iPhone-first PWA for learning blackjack basic strategy. React + TypeScript + Vite, fully offline (service worker), stats in localStorage. No backend, no real money.
 
@@ -38,3 +38,19 @@ node scripts/screenshots-count.mjs http://localhost:4173/   # Count-mode screens
 node scripts/screenshots-deviations.mjs http://localhost:4173/   # Deviations screenshots
 scripts/deploy-gh-pages.sh                            # after `gh auth login`
 ```
+
+## Round 9: App Store readiness (iOS wrapper)
+The web app (GitHub Pages) is unchanged in behaviour: **fully unlocked, no paywall, no purchase UI**. The paywall and IAP only exist when the build flag `VITE_NATIVE=true` is set (`npm run build:native`).
+
+- **Capacitor 8 iOS wrapper** (`ios/`, Swift Package Manager, iPhone-only, portrait). All ids and names live in `app.config.json`; run `npm run apply-app-config` after editing. `npm run cap:sync` builds the native bundle and syncs it (Node 22+ needed for the Capacitor CLI).
+- **Purchases**: `src/entitlements/` — the app only asks `hasPro()`. Providers: `StoreKitProvider` (`@capgo/native-purchases`, StoreKit 2, non-consumable, restore, offer-code sheet) and `MockProvider` (web/dev). Entitlement is cached and re-verified on launch; offline keeps the cache, a definitive "not owned" revokes it. Gating rules are in `src/entitlements/gating.ts` (tested).
+  - Free: Play with basic coaching, Learn charts, basic Drill, index list (view only), discard tray, deal speed, basic stats, Flash up to 20 cards.
+  - Unlock: unlimited Flash, Rounds, count-while-you-play + bet sizing, deviation grading/drill/TC overlay, insurance grading, count/bet/deviation stats.
+  - Dev: `VITE_NATIVE=true VITE_DEV_TOOLS=true npm run build` shows mock Grant/Revoke/Offline/Fail controls in Settings.
+- **Storage**: `src/storage` (Capacitor Preferences native, localStorage fallback, one-time migration) and Export/Import backup (JSON; entitlement is never included).
+- **Stats are per rule set** (`6D-H17-DAS-LS-3:2` etc.) with an All / This table / other-sets selector; old stats migrated to the default-rules bucket.
+- **Play**: after-shoe summary at the reshuffle and a "Last hand" review (every decision with the correct play and why).
+- **Welcome + disclaimer** on first launch (re-openable from Settings), About, haptics toggle, privacy (`/privacy/`) and support (`/support/`) pages.
+- **Accessibility**: labelled cards/buttons, `aria-pressed` toggles, modal focus handling, Dynamic Type (rem, capped), reduced motion, visible focus. `node scripts/contrast.mjs` checks the palette (WCAG AA).
+- **CI**: `ci/github-workflows/` (simulator build; manual TestFlight upload). See `docs/APPLE-SETUP.md`.
+- Verification scripts: `scripts/verify-native.mjs <nativeUrl> <webUrl>`, `scripts/screenshots-round9.mjs`, `scripts/screenshots-review.mjs`, `scripts/screenshots-dynamictype.mjs`.

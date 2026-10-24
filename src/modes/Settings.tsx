@@ -10,7 +10,7 @@ function Opt<T extends string | number | boolean>({ label, value, options, onCha
     <div className="opt">
       <div className="opt-label with-help">{label}<HelpBubble id={help} label={label} /></div>
       <div className="seg small">
-        {options.map(([v, l]) => <button key={String(v)} className={v === value ? 'on' : ''} onClick={() => onChange(v)}>{l}</button>)}
+        {options.map(([v, l]) => <button key={String(v)} className={v === value ? 'on' : ''} aria-pressed={v === value} onClick={() => onChange(v)}>{l}</button>)}
       </div>
     </div>
   );

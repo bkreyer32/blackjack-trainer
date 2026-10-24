@@ -60,7 +60,7 @@ function Seg<T extends string | number | boolean>({ label, value, options, onCha
     <div className="opt">
       {label && <div className={`opt-label${help ? ' with-help' : ''}`}>{label}{help && <HelpBubble id={help} label={label} />}</div>}
       <div className="seg small">
-        {options.map(([v, l]) => <button key={String(v)} className={v === value ? 'on' : ''} onClick={() => onChange(v)}>{l}</button>)}
+        {options.map(([v, l]) => <button key={String(v)} className={v === value ? 'on' : ''} aria-pressed={v === value} onClick={() => onChange(v)}>{l}</button>)}
       </div>
     </div>
   );
