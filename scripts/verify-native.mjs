@@ -1,7 +1,7 @@
 // Headless check: native-flag build (mock provider) is gated + paywall flows work; web build is fully unlocked.
 // Usage: node scripts/verify-native.mjs <nativeUrl> <webUrl>
 import puppeteer from 'puppeteer-core';
-const [NATIVE, WEB] = [process.argv[2] || 'http://localhost:4180/', process.argv[3] || 'http://localhost:4173/'];
+const [NATIVE, WEB] = [process.argv[2] || "http://localhost:4180/", process.argv[3] || "http://localhost:4173/"];
 const browser = await puppeteer.launch({ executablePath: '/usr/bin/google-chrome', headless: 'new', args: ['--no-sandbox'] });
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 let fails = 0;
